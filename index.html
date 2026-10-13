@@ -767,7 +767,65 @@ window.removeStudentById=id=>{if(!confirm('Delete this student?'))return;localSt
 
 document.addEventListener('click',e=>{const btn=e.target.closest('.password-toggle');if(!btn)return;const input=$(btn.dataset.passwordTarget);if(!input)return;const showing=input.type==='text';if(btn._hideTimer)clearTimeout(btn._hideTimer);const isAnswer=(btn.dataset.passwordTarget||'').toLowerCase().includes('answer');const showLabel=isAnswer?'Show answer':'Show password';const hideLabel=isAnswer?'Hide answer':'Hide password';input.type=showing?'password':'text';btn.setAttribute('aria-label',showing?showLabel:hideLabel);btn.title=btn.getAttribute('aria-label');btn.innerHTML=showing?'<span class="eye-closed">👁</span>':'<span class="eye-open">🙈</span>';if(!showing){btn._hideTimer=setTimeout(()=>{if(input.type==='text'){input.type='password';btn.setAttribute('aria-label',showLabel);btn.title=showLabel;btn.innerHTML='<span class="eye-closed">👁</span>'}btn._hideTimer=null},1000)}});
 
-$('registerForm').addEventListener('submit',e=>{e.preventDefault();const fullName=$('fullName').value.trim(),username=$('regUsername').value.trim(),password=$('regPassword').value,confirm=$('confirmPassword').value;if(!fullName||!username)return msg('regMsg','Please complete all required fields.','error');if(password!==confirm)return msg('regMsg','Passwords do not match.','error');if(password.length<6)return msg('regMsg','Password must be at least 6 characters.','error');if(account())return msg('regMsg','An account already exists. Please log in.','error');localStorage.setItem(ACCOUNT_KEY,JSON.stringify({fullName,username,password}));sessionStorage.setItem(SESSION_KEY,'true');openApp()});
+
+$('registerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const fullName = $('fullName').value.trim();
+  const username = $('regUsername').value.trim().toLowerCase();
+  const password = $('regPassword').value;
+  const confirmPassword = $('confirmPassword').value;
+
+  if (!fullName || !username) {
+    return msg('regMsg', 'Please complete all required fields.', 'error');
+  }
+
+  if (password !== confirmPassword) {
+    return msg('regMsg', 'Passwords do not match.', 'error');
+  }
+
+  if (password.length < 10) {
+    return msg('regMsg', 'Password must be at least 10 characters.', 'error');
+  }
+
+  if (account()) {
+    return msg('regMsg', 'An account already exists. Please log in.', 'error');
+  }
+
+  try {
+    const response = await fetch(
+      'https://classrecord-api.erwinalcamphorjr.workers.dev/auth/register',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          username,
+          password,
+          confirmPassword
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return msg('regMsg', result.error || 'Registration failed.', 'error');
+    }
+
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify({
+      fullName,
+      username
+    }));
+
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    openApp();
+
+  } catch (error) {
+    msg('regMsg', 'Unable to connect. Please check your internet connection.', 'error');
+  }
+});
+
 function requestActionConfirmation(message,yesCallback,noCallback){
   const modal=$('actionConfirmModal'); if(!modal){return yesCallback?.();}
   $('actionConfirmMessage').textContent=message; modal.classList.remove('hidden');
@@ -823,10 +881,11 @@ function verifyRecovery(){const ac=account(),sec=teacherSecurity();if(!ac)return
 function saveRecoveredPassword(){const ac=account(),pw=$('recoveryNewPassword').value,confirm=$('recoveryConfirmPassword').value;if(!ac)return msg('recoveryMsg','No teacher account is registered.','error');if(pw.length<6)return msg('recoveryMsg','New password must be at least 6 characters.','error');if(pw!==confirm)return msg('recoveryMsg','The new passwords do not match.','error');localStorage.setItem(ACCOUNT_KEY,JSON.stringify({...ac,password:pw}));$('loginUsername').value=ac.username||'';$('loginPassword').value='';closeRecoveryModal();msg('loginMsg','Password reset successfully. You can now log in with your new password.','success')}
 $('forgotAccountLink').addEventListener('click',openRecoveryModal);$('closeRecoveryModal').addEventListener('click',closeRecoveryModal);$('cancelRecovery').addEventListener('click',closeRecoveryModal);$('accountRecoveryModal').addEventListener('click',e=>{if(e.target===$('accountRecoveryModal'))closeRecoveryModal()});$('verifyRecoveryAnswers').addEventListener('click',verifyRecovery);$('saveRecoveredPassword').addEventListener('click',saveRecoveredPassword);$('recoveryMode').addEventListener('change',()=>{ if($('recoveryMode').disabled)return; $('recoveryResetFields').classList.add('hidden');$('recoveryUsernameResult').classList.add('hidden');$('saveRecoveredPassword').classList.add('hidden');$('verifyRecoveryAnswers').classList.remove('hidden');$('recoveryMsg').style.display='none' });
 
+
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
 
-  const username = $('loginUsername').value.trim();
+  const username = $('loginUsername').value.trim().toLowerCase();
   const password = $('loginPassword').value;
 
   try {
@@ -835,9 +894,7 @@ $('loginForm').addEventListener('submit', async e => {
       {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       }
     );
@@ -852,7 +909,15 @@ $('loginForm').addEventListener('submit', async e => {
       );
     }
 
+    const teacher = result.user || {};
+
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify({
+      fullName: teacher.fullName || teacher.full_name || username,
+      username: teacher.username || username
+    }));
+
     sessionStorage.setItem(SESSION_KEY, 'true');
+    $('loginPassword').value = '';
     openApp();
 
   } catch (error) {
@@ -863,6 +928,7 @@ $('loginForm').addEventListener('submit', async e => {
     );
   }
 });
+
 
 $('sidebarAccountName')&&( $('sidebarAccountName').textContent=(account()||{}).fullName||(account()||{}).username||'Teacher');
 $('logout').addEventListener('click',()=>{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);$('app').classList.add('hidden');$('auth').classList.remove('hidden');showLogin()});
