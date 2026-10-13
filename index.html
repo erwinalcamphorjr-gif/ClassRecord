@@ -822,7 +822,48 @@ function closeRecoveryModal(){ $('accountRecoveryModal').classList.add('hidden')
 function verifyRecovery(){const ac=account(),sec=teacherSecurity();if(!ac)return msg('recoveryMsg','No teacher account is registered.','error');const enteredUser=$('recoveryUsername').value.trim();if(enteredUser&&enteredUser.toLowerCase()!==String(ac.username||'').trim().toLowerCase())return msg('recoveryMsg','The username entered does not match this account. Leave it blank if you forgot it.','error');const norm=v=>String(v||'').trim().toLocaleLowerCase();if(!norm($('recoveryAnswer1').value)||!norm($('recoveryAnswer2').value))return msg('recoveryMsg','Please answer both security questions.','error');if(norm($('recoveryAnswer1').value)!==norm(sec.answer1)||norm($('recoveryAnswer2').value)!==norm(sec.answer2))return msg('recoveryMsg','The answers do not match the saved security answers. Please try again.','error');$('recoveryMsg').style.display='none';['recoveryUsername','recoveryAnswer1','recoveryAnswer2','recoveryMode'].forEach(id=>$(id).disabled=true);if($('recoveryMode').value==='username'){$('recoveryUsernameResult').innerHTML='<strong>Your username:</strong> '+escapeHtml(ac.username||'');$('recoveryUsernameResult').classList.remove('hidden');$('verifyRecoveryAnswers').classList.add('hidden');return} $('recoveryResetFields').classList.remove('hidden');$('verifyRecoveryAnswers').classList.add('hidden');$('saveRecoveredPassword').classList.remove('hidden');$('recoveryNewPassword').focus()}
 function saveRecoveredPassword(){const ac=account(),pw=$('recoveryNewPassword').value,confirm=$('recoveryConfirmPassword').value;if(!ac)return msg('recoveryMsg','No teacher account is registered.','error');if(pw.length<6)return msg('recoveryMsg','New password must be at least 6 characters.','error');if(pw!==confirm)return msg('recoveryMsg','The new passwords do not match.','error');localStorage.setItem(ACCOUNT_KEY,JSON.stringify({...ac,password:pw}));$('loginUsername').value=ac.username||'';$('loginPassword').value='';closeRecoveryModal();msg('loginMsg','Password reset successfully. You can now log in with your new password.','success')}
 $('forgotAccountLink').addEventListener('click',openRecoveryModal);$('closeRecoveryModal').addEventListener('click',closeRecoveryModal);$('cancelRecovery').addEventListener('click',closeRecoveryModal);$('accountRecoveryModal').addEventListener('click',e=>{if(e.target===$('accountRecoveryModal'))closeRecoveryModal()});$('verifyRecoveryAnswers').addEventListener('click',verifyRecovery);$('saveRecoveredPassword').addEventListener('click',saveRecoveredPassword);$('recoveryMode').addEventListener('change',()=>{ if($('recoveryMode').disabled)return; $('recoveryResetFields').classList.add('hidden');$('recoveryUsernameResult').classList.add('hidden');$('saveRecoveredPassword').classList.add('hidden');$('verifyRecoveryAnswers').classList.remove('hidden');$('recoveryMsg').style.display='none' });
-$('loginForm').addEventListener('submit',e=>{e.preventDefault();const ac=account();if(!ac)return msg('loginMsg','No account is registered on this browser.','error');if($('loginUsername').value.trim()===ac.username&&$('loginPassword').value===ac.password){sessionStorage.setItem(SESSION_KEY,'true');openApp()}else msg('loginMsg','Incorrect username or password.','error')});
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const username = $('loginUsername').value.trim();
+  const password = $('loginPassword').value;
+
+  try {
+    const response = await fetch(
+      'https://classrecord-api.erwinalcamphorjr.workers.dev/auth/teacher-login',
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return msg(
+        'loginMsg',
+        result.error || 'Login failed. Please try again.',
+        'error'
+      );
+    }
+
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    openApp();
+
+  } catch (error) {
+    msg(
+      'loginMsg',
+      'Unable to connect. Please check your internet connection.',
+      'error'
+    );
+  }
+});
+
 $('sidebarAccountName')&&( $('sidebarAccountName').textContent=(account()||{}).fullName||(account()||{}).username||'Teacher');
 $('logout').addEventListener('click',()=>{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);$('app').classList.add('hidden');$('auth').classList.remove('hidden');showLogin()});
 
