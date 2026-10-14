@@ -299,7 +299,7 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
 <div class="auth" id="auth">
 <div id="loginAsSwitcher" class="login-as-switcher"><span>Log in as:</span><button type="button" id="loginAsStudent" class="login-as-option" aria-pressed="false">STUDENT</button><button type="button" id="loginAsTeacher" class="login-as-option active" aria-pressed="true">TEACHER</button></div>
 <div class="auth-card" id="registerCard"><h1>Class Record</h1><div class="sub">Teacher Account Setup</div>
-<form id="registerForm"><label>Full Name</label><input id="fullName" placeholder="Enter your full name" required=""/><label>Username</label><input id="regUsername" placeholder="Create a username" required=""/><label>Email Address</label><input id="regEmail" type="email" autocomplete="email" placeholder="Enter your email address" required=""/><label>Password</label><div class="password-wrap"><input id="regPassword" placeholder="Create a password" required="" type="password"/><button aria-label="Show password" class="password-toggle" data-password-target="regPassword" title="Show password" type="button"><span class="eye-closed">👁</span></button></div><label>Confirm Password</label><div class="password-wrap"><input id="confirmPassword" placeholder="Re-enter your password" required="" type="password"/><button aria-label="Show password" class="password-toggle" data-password-target="confirmPassword" title="Show password" type="button"><span class="eye-closed">👁</span></button></div><button class="primary">Create Account</button></form><div class="msg" id="regMsg"></div><div class="link" onclick="showLogin()">Already have an account? Log in</div><div class="link" id="openStudentLoginFromRegister">Student Login</div>
+<form id="registerForm"><label>Full Name</label><input id="fullName" placeholder="Enter your full name" required=""/><label>Username</label><input id="regUsername" placeholder="Create a username" required=""/><label>Password</label><div class="password-wrap"><input id="regPassword" placeholder="Create a password" required="" type="password"/><button aria-label="Show password" class="password-toggle" data-password-target="regPassword" title="Show password" type="button"><span class="eye-closed">👁</span></button></div><label>Confirm Password</label><div class="password-wrap"><input id="confirmPassword" placeholder="Re-enter your password" required="" type="password"/><button aria-label="Show password" class="password-toggle" data-password-target="confirmPassword" title="Show password" type="button"><span class="eye-closed">👁</span></button></div><button class="primary">Create Account</button></form><div class="msg" id="regMsg"></div><div class="link" onclick="showLogin()">Already have an account? Log in</div><div class="link" id="openStudentLoginFromRegister">Student Login</div>
 </div>
 <div class="auth-card hidden" id="loginCard"><h1>Class Record</h1><div class="sub">Teacher Login</div>
 <form id="loginForm"><label>Username</label><input id="loginUsername" placeholder="Enter username" required=""/><label>Password</label><div class="password-wrap"><input id="loginPassword" placeholder="Enter password" required="" type="password"/><button aria-label="Show password" class="password-toggle" data-password-target="loginPassword" title="Show password" type="button"><span class="eye-closed">👁</span></button></div><button class="primary">Log In</button></form><div class="msg" id="loginMsg"></div><div class="link" id="forgotAccountLink">Forgot username or password?</div><div class="link" onclick="showRegister()">Create a new account</div>
@@ -759,8 +759,6 @@ function closeStudentPrintLayoutModal(){$('studentPrintLayoutModal')?.classList.
 function updatePrintLayoutPreview(){const orientation=$('printOrientation').value,margin=$('printMargins').value,size=$('printPaperSize').value;const page=$('printLayoutPreview').querySelector('.print-preview-page');if(!page)return;page.style.padding=margin==='narrow'?'12px':'24px';page.dataset.orientation=orientation;page.dataset.size=size;const report=page.querySelector('.student-print-report');if(report){report.style.fontSize=margin==='narrow'?'9px':'10px';report.querySelectorAll('th,td').forEach(x=>x.style.padding=margin==='narrow'?'3px 4px':'5px 6px')}}
 function printStudentReportNow(){const id=$('viewStudentModal').dataset.studentId,semester=$('viewStudentSemester').value,type=$('studentPrintType').value,period=$('studentPrintPeriod').value,orientation=$('printOrientation').value,margin=$('printMargins').value,size=$('printPaperSize').value;const html=type==='Grade'?buildStudentGradePrint(id,semester,period):buildStudentAttendancePrint(id,semester,period);const printWindow=window.open('','_blank');if(!printWindow){msg('studentPrintModalMsg','Please allow pop-ups for this site to open the printable report.','error');return}closeStudentPrintLayoutModal();const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');const pageCss=`@page{size:${size} ${orientation};margin:${margin==='narrow'?'0.35in':'0.7in'}}html,body{margin:0;padding:0;background:#fff}body{font-family:Arial,sans-serif;color:#111827}.student-print-report{box-sizing:border-box;width:100%;padding:0}.student-print-report table{page-break-inside:auto}.student-print-report tr{page-break-inside:avoid;page-break-after:auto}.student-print-report .print-footer{page-break-inside:avoid}.student-print-report th,.student-print-report td{padding:${margin==='narrow'?'3px 4px':'5px 6px'}}.student-print-report{font-size:${margin==='narrow'?'9px':'10px'}}`;printWindow.document.open();printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Student Report</title><style>${styles}</style><style>${pageCss}</style></head><body class="student-printing">${html}
 
-
-
 </body></html>`);printWindow.document.close();printWindow.focus();const startPrint=()=>{setTimeout(()=>{printWindow.print();},150)};if(printWindow.document.readyState==='complete')startPrint();else printWindow.addEventListener('load',startPrint,{once:true});}
 
 window.viewStudentById=function(id){const x=students().find(s=>String(s.id)===String(id));if(!x)return;const fields=[['Student ID',x.id],['Student Name',displayStudentName(x)],['Status',studentEnrollmentStatus(x.id).status],['Gender',x.gender||'—'],['Birthday',x.birthday||'—'],['Age',calculateAge(x.birthday)],['Address',x.address||'—'],['Contact Number',x.contact||'—'],['Email Address',x.email||'—'],['Level/Class/Course',x.grade||'—'],['Year/Section',x.section||'—']];const details=$("viewStudentDetails");if(details)details.innerHTML=`<div class="student-view-photo-wrap full"><img class="student-view-photo" src="${x.photo||''}" alt="Student photo" style="${x.photo?'':'display:none'}"><span class="student-photo-placeholder" style="${x.photo?'display:none':''}">👤</span><div><strong>${escapeHtml(displayStudentName(x))}</strong><div class="muted">Student photo</div></div></div>`+fields.map(([l,v])=>`<div><label>${escapeHtml(l)}</label><div class="setup-row" style="margin:0;padding:10px;background:#f8fafc">${escapeHtml(String(v))}</div></div>`).join('');const dropInfo=$("viewStudentDropInfo");if(dropInfo){dropInfo.classList.add('hidden');dropInfo.innerHTML='';}const panel=$("viewStudentSubjectsPanel");if(panel)panel.classList.remove('hidden');const modal=$("viewStudentModal");if(!modal)return;modal.dataset.studentId=String(x.id);$('viewStudentGradesPanel')?.classList.add('hidden');$('viewStudentAttendancePanel')?.classList.add('hidden');$('viewStudentGradeView')?.classList.add('hidden');$('viewStudentAttendanceView')?.classList.add('hidden');populateStudentViewPeriods(false,false);modal.classList.remove('hidden');try{renderStudentSubjectsView(String(x.id))}catch(err){console.error('Student View subjects error:',err);const target=$("viewStudentSubjects");if(target)target.innerHTML='<div class="empty">Student information is available, but Subjects Taken could not be loaded.</div>'}};
@@ -769,68 +767,7 @@ window.removeStudentById=id=>{if(!confirm('Delete this student?'))return;localSt
 
 document.addEventListener('click',e=>{const btn=e.target.closest('.password-toggle');if(!btn)return;const input=$(btn.dataset.passwordTarget);if(!input)return;const showing=input.type==='text';if(btn._hideTimer)clearTimeout(btn._hideTimer);const isAnswer=(btn.dataset.passwordTarget||'').toLowerCase().includes('answer');const showLabel=isAnswer?'Show answer':'Show password';const hideLabel=isAnswer?'Hide answer':'Hide password';input.type=showing?'password':'text';btn.setAttribute('aria-label',showing?showLabel:hideLabel);btn.title=btn.getAttribute('aria-label');btn.innerHTML=showing?'<span class="eye-closed">👁</span>':'<span class="eye-open">🙈</span>';if(!showing){btn._hideTimer=setTimeout(()=>{if(input.type==='text'){input.type='password';btn.setAttribute('aria-label',showLabel);btn.title=showLabel;btn.innerHTML='<span class="eye-closed">👁</span>'}btn._hideTimer=null},1000)}});
 
-
-$('registerForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const fullName = $('fullName').value.trim();
-  const username = $('regUsername').value.trim().toLowerCase();
-  const email = $('regEmail').value.trim().toLowerCase();
-  const password = $('regPassword').value;
-  const confirmPassword = $('confirmPassword').value;
-
-  if (!fullName || !username || !email) {
-    return msg('regMsg', 'Please complete all required fields, including email address.', 'error');
-  }
-
-  if (password !== confirmPassword) {
-    return msg('regMsg', 'Passwords do not match.', 'error');
-  }
-
-  if (password.length < 10) {
-    return msg('regMsg', 'Password must be at least 10 characters.', 'error');
-  }
-
-  if (account()) {
-    return msg('regMsg', 'An account already exists. Please log in.', 'error');
-  }
-
-  try {
-    const response = await fetch(
-      'https://classrecord-api.erwinalcamphorjr.workers.dev/auth/register',
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName,
-          username,
-          email,
-          password,
-          confirmPassword
-        })
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      return msg('regMsg', result.error || 'Registration failed.', 'error');
-    }
-
-    localStorage.setItem(ACCOUNT_KEY, JSON.stringify({
-      fullName,
-      username
-    }));
-
-    sessionStorage.setItem(SESSION_KEY, 'true');
-    openApp();
-
-  } catch (error) {
-    msg('regMsg', 'Unable to connect. Please check your internet connection.', 'error');
-  }
-});
-
+$('registerForm').addEventListener('submit',e=>{e.preventDefault();const fullName=$('fullName').value.trim(),username=$('regUsername').value.trim(),password=$('regPassword').value,confirm=$('confirmPassword').value;if(!fullName||!username)return msg('regMsg','Please complete all required fields.','error');if(password!==confirm)return msg('regMsg','Passwords do not match.','error');if(password.length<6)return msg('regMsg','Password must be at least 6 characters.','error');if(account())return msg('regMsg','An account already exists. Please log in.','error');localStorage.setItem(ACCOUNT_KEY,JSON.stringify({fullName,username,password}));sessionStorage.setItem(SESSION_KEY,'true');openApp()});
 function requestActionConfirmation(message,yesCallback,noCallback){
   const modal=$('actionConfirmModal'); if(!modal){return yesCallback?.();}
   $('actionConfirmMessage').textContent=message; modal.classList.remove('hidden');
@@ -885,56 +822,7 @@ function closeRecoveryModal(){ $('accountRecoveryModal').classList.add('hidden')
 function verifyRecovery(){const ac=account(),sec=teacherSecurity();if(!ac)return msg('recoveryMsg','No teacher account is registered.','error');const enteredUser=$('recoveryUsername').value.trim();if(enteredUser&&enteredUser.toLowerCase()!==String(ac.username||'').trim().toLowerCase())return msg('recoveryMsg','The username entered does not match this account. Leave it blank if you forgot it.','error');const norm=v=>String(v||'').trim().toLocaleLowerCase();if(!norm($('recoveryAnswer1').value)||!norm($('recoveryAnswer2').value))return msg('recoveryMsg','Please answer both security questions.','error');if(norm($('recoveryAnswer1').value)!==norm(sec.answer1)||norm($('recoveryAnswer2').value)!==norm(sec.answer2))return msg('recoveryMsg','The answers do not match the saved security answers. Please try again.','error');$('recoveryMsg').style.display='none';['recoveryUsername','recoveryAnswer1','recoveryAnswer2','recoveryMode'].forEach(id=>$(id).disabled=true);if($('recoveryMode').value==='username'){$('recoveryUsernameResult').innerHTML='<strong>Your username:</strong> '+escapeHtml(ac.username||'');$('recoveryUsernameResult').classList.remove('hidden');$('verifyRecoveryAnswers').classList.add('hidden');return} $('recoveryResetFields').classList.remove('hidden');$('verifyRecoveryAnswers').classList.add('hidden');$('saveRecoveredPassword').classList.remove('hidden');$('recoveryNewPassword').focus()}
 function saveRecoveredPassword(){const ac=account(),pw=$('recoveryNewPassword').value,confirm=$('recoveryConfirmPassword').value;if(!ac)return msg('recoveryMsg','No teacher account is registered.','error');if(pw.length<6)return msg('recoveryMsg','New password must be at least 6 characters.','error');if(pw!==confirm)return msg('recoveryMsg','The new passwords do not match.','error');localStorage.setItem(ACCOUNT_KEY,JSON.stringify({...ac,password:pw}));$('loginUsername').value=ac.username||'';$('loginPassword').value='';closeRecoveryModal();msg('loginMsg','Password reset successfully. You can now log in with your new password.','success')}
 $('forgotAccountLink').addEventListener('click',openRecoveryModal);$('closeRecoveryModal').addEventListener('click',closeRecoveryModal);$('cancelRecovery').addEventListener('click',closeRecoveryModal);$('accountRecoveryModal').addEventListener('click',e=>{if(e.target===$('accountRecoveryModal'))closeRecoveryModal()});$('verifyRecoveryAnswers').addEventListener('click',verifyRecovery);$('saveRecoveredPassword').addEventListener('click',saveRecoveredPassword);$('recoveryMode').addEventListener('change',()=>{ if($('recoveryMode').disabled)return; $('recoveryResetFields').classList.add('hidden');$('recoveryUsernameResult').classList.add('hidden');$('saveRecoveredPassword').classList.add('hidden');$('verifyRecoveryAnswers').classList.remove('hidden');$('recoveryMsg').style.display='none' });
-
-
-$('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const username = $('loginUsername').value.trim().toLowerCase();
-  const password = $('loginPassword').value;
-
-  try {
-    const response = await fetch(
-      'https://classrecord-api.erwinalcamphorjr.workers.dev/auth/teacher-login',
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      return msg(
-        'loginMsg',
-        result.error || 'Login failed. Please try again.',
-        'error'
-      );
-    }
-
-    const teacher = result.user || {};
-
-    localStorage.setItem(ACCOUNT_KEY, JSON.stringify({
-      fullName: teacher.fullName || teacher.full_name || username,
-      username: teacher.username || username
-    }));
-
-    sessionStorage.setItem(SESSION_KEY, 'true');
-    $('loginPassword').value = '';
-    openApp();
-
-  } catch (error) {
-    msg(
-      'loginMsg',
-      'Unable to connect. Please check your internet connection.',
-      'error'
-    );
-  }
-});
-
-
+$('loginForm').addEventListener('submit',e=>{e.preventDefault();const ac=account();if(!ac)return msg('loginMsg','No account is registered on this browser.','error');if($('loginUsername').value.trim()===ac.username&&$('loginPassword').value===ac.password){sessionStorage.setItem(SESSION_KEY,'true');openApp()}else msg('loginMsg','Incorrect username or password.','error')});
 $('sidebarAccountName')&&( $('sidebarAccountName').textContent=(account()||{}).fullName||(account()||{}).username||'Teacher');
 $('logout').addEventListener('click',()=>{sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);$('app').classList.add('hidden');$('auth').classList.remove('hidden');showLogin()});
 
@@ -1622,7 +1510,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     <label for="studentPortalPassword">Password</label><div class="student-portal-password-row"><input id="studentPortalPassword" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password"><button class="secondary" type="button" id="studentPortalTogglePassword" aria-label="Reveal password" title="Reveal password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
     <button class="primary" type="submit" style="width:100%">Log In</button><div id="studentPortalLoginMsg" class="student-portal-msg" role="status"></div>
    </form>
-   <p class="student-portal-muted">For first-time login, use the temporary password provided by your teacher. You will be asked to create your own password. If you forget it, contact your teacher for a password reset.</p>
+   <p class="student-portal-muted">First-time login default password: <strong>Student@123</strong>. You will be asked to create your own password. If you forget it, contact your teacher for a temporary password.</p>
   </section>
   <section id="studentPortalChangePassword" class="student-portal-card student-portal-form hidden">
    <h1 style="margin-bottom:6px">Create Your Password</h1><p class="student-portal-muted">For your account's safety, create a new password before continuing.</p>
@@ -1645,18 +1533,21 @@ document.addEventListener('DOMContentLoaded',()=>{
 </div>
 <script id="student-login-portal-feature">
 (function(){
- const $=id=>document.getElementById(id);let activeStudentId='',studentPasswordRevealTimer=null,onlineStudentUser=null;
- const STUDENT_API='https://classrecord-api.erwinalcamphorjr.workers.dev';
- async function studentApi(path,options={}){const response=await fetch(STUDENT_API+path,{credentials:'include',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});let result={};try{result=await response.json()}catch(_){}if(!response.ok)throw new Error(result.error||('Request failed ('+response.status+')'));return result;}
- function applyStudentCloudData(data){if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Student records could not be loaded.');for(const [key,value] of Object.entries(data)){if(!/^classRecord[A-Za-z0-9_]*$/.test(key)||/account|loggedin|password|token|secret|credential|session/i.test(key)||typeof value!=='string')continue;localStorage.setItem(key,value);}}
+ const $=id=>document.getElementById(id);let activeStudentId='',studentPasswordRevealTimer=null;
  const getStudents=()=>{try{const v=JSON.parse(localStorage.getItem('classRecordStudents')||'[]');return Array.isArray(v)?v:[]}catch(_){return []}};
  const setMsg=(id,text,type='')=>{const el=$(id);if(el){el.textContent=text;el.className='student-portal-msg'+(type?' '+type:'')}};
  const studentName=s=>[s.firstName,s.mi,s.lastName,s.suffix].filter(Boolean).join(' ').trim()||String(s.id||'Student');
  const hideAll=()=>['studentPortalLogin','studentPortalChangePassword','studentPortalDashboard'].forEach(id=>$(id).classList.add('hidden'));
  function openStudentLogin(){ const portalSwitcher=document.querySelector('#studentPortal .login-as-switcher');if(portalSwitcher)portalSwitcher.classList.remove('hidden');const authSwitcher=$('loginAsSwitcher');if(authSwitcher)authSwitcher.classList.remove('hidden');$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('registerCard').classList.add('hidden');$('loginCard').classList.add('hidden');$('studentPortal').classList.remove('hidden');$('loginAsStudent').classList.add('active');$('loginAsStudent').setAttribute('aria-pressed','true');$('loginAsTeacher').classList.remove('active');$('loginAsTeacher').setAttribute('aria-pressed','false');hideAll();$('studentPortalLogin').classList.remove('hidden');$('studentPortalUsername').value='';$('studentPortalPassword').value='';$('studentPortalPassword').type='password';if(studentPasswordRevealTimer){clearTimeout(studentPasswordRevealTimer);studentPasswordRevealTimer=null;}const pwToggle=$('studentPortalTogglePassword');if(pwToggle){pwToggle.setAttribute('aria-label','Reveal password');pwToggle.title='Reveal password';pwToggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';}setMsg('studentPortalLoginMsg','');setMsg('studentPortalChangeMsg','');$('studentPortalUsername').focus(); }
  function closeStudentPortal(){ const authSwitcher=$('loginAsSwitcher');if(authSwitcher)authSwitcher.classList.remove('hidden');$('studentPortal').classList.add('hidden');activeStudentId='';$('loginAsTeacher').classList.add('active');$('loginAsTeacher').setAttribute('aria-pressed','true');$('loginAsStudent').classList.remove('active');$('loginAsStudent').setAttribute('aria-pressed','false');if(account())showLogin();else showRegister();$('auth').classList.remove('hidden');$('app').classList.add('hidden'); }
- async function login(e){e.preventDefault();const id=$('studentPortalUsername').value.trim(),pw=$('studentPortalPassword').value;if(!id||!pw)return;const submit=$('studentPortalLoginForm').querySelector('button[type=submit]');if(submit)submit.disabled=true;setMsg('studentPortalLoginMsg','Signing in securely…');try{const auth=await studentApi('/auth/student-login',{method:'POST',body:JSON.stringify({studentNumber:id,password:pw})});onlineStudentUser=auth.user||null;activeStudentId=String(onlineStudentUser?.student_number||id);const response=await studentApi('/api/student-data',{method:'GET'});applyStudentCloudData(response.data);const list=getStudents(),st=list.find(x=>String(x.id).trim().toLowerCase()===activeStudentId.trim().toLowerCase())||{id:activeStudentId,firstName:String(onlineStudentUser?.full_name||'Student').split(/\s+/)[0],lastName:String(onlineStudentUser?.full_name||'').split(/\s+/).slice(1).join(' ')};$('studentPortalPassword').value='';if(auth.mustChangePassword){hideAll();$('studentPortalChangePassword').classList.remove('hidden');setMsg('studentPortalChangeMsg','Please create a new password to continue.','');$('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';$('studentPortalNewPassword').focus();return;}showDashboard(st);}catch(err){console.error('Student online login:',err);setMsg('studentPortalLoginMsg',err.message||'Unable to sign in online. Check your connection or contact your teacher.','error');}finally{if(submit)submit.disabled=false;}}
- async function saveNewPassword(e){
+ function login(e){e.preventDefault();const id=$('studentPortalUsername').value.trim(),pw=$('studentPortalPassword').value;const list=getStudents(),st=list.find(x=>String(x.id).trim().toLowerCase()===id.toLowerCase());if(!st){setMsg('studentPortalLoginMsg','Student ID was not found. Please check your ID or contact your teacher.','error');return}
+  const saved=String(st.studentPassword||''),temp=String(st.temporaryPassword||''),firstTime=!saved,ok=firstTime?(pw==='Student@123'||!!temp&&pw===temp):(pw===saved||!!temp&&pw===temp);
+  if(!ok){setMsg('studentPortalLoginMsg','Incorrect Student ID or password. If you forgot your password, contact your teacher for a temporary password.','error');return}
+  activeStudentId=String(st.id);$('studentPortalPassword').value='';
+  if(firstTime||pw==='Student@123'||(temp&&pw===temp)||st.mustChangeStudentPassword){hideAll();$('studentPortalChangePassword').classList.remove('hidden');setMsg('studentPortalChangeMsg','Please create a new password to continue.','');$('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';$('studentPortalNewPassword').focus();return}
+  showDashboard(st);
+ }
+ function saveNewPassword(e){
   if(e){e.preventDefault();e.stopPropagation();}
   const pw=String($('studentPortalNewPassword').value||''),confirm=String($('studentPortalConfirmPassword').value||'');
   if(!activeStudentId){setMsg('studentPortalChangeMsg','Your student session expired. Please log in again.','error');return;}
@@ -1664,14 +1555,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(pw==='Student@123'){setMsg('studentPortalChangeMsg','Choose a password different from the default password.','error');$('studentPortalNewPassword').focus();return;}
   if(pw!==confirm){setMsg('studentPortalChangeMsg','The passwords do not match. Please enter the same password in both fields.','error');$('studentPortalConfirmPassword').focus();return;}
   try{
-   await studentApi('/auth/change-password',{method:'POST',body:JSON.stringify({newPassword:pw,confirmPassword:confirm})});
-   const response=await studentApi('/api/student-data',{method:'GET'});applyStudentCloudData(response.data);
-   const verify=getStudents().find(x=>String(x.id??'').trim().toLowerCase()===activeStudentId.trim().toLowerCase())||{id:activeStudentId,firstName:String(onlineStudentUser?.full_name||'Student').split(/\s+/)[0],lastName:String(onlineStudentUser?.full_name||'').split(/\s+/).slice(1).join(' ')};
-   $('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';showDashboard(verify);
-  }catch(err){console.error('Unable to change online student password:',err);setMsg('studentPortalChangeMsg',err.message||'Unable to save your password online. Please try again.','error');}
+   const list=getStudents(),i=list.findIndex(x=>String(x.id??'').trim().toLowerCase()===activeStudentId.trim().toLowerCase());
+   if(i<0){setMsg('studentPortalChangeMsg','Student record not found. Please contact your teacher.','error');return;}
+   list[i].studentPassword=pw;list[i].mustChangeStudentPassword=false;delete list[i].temporaryPassword;delete list[i].temporaryPasswordGeneratedAt;
+   localStorage.setItem('classRecordStudents',JSON.stringify(list));
+   const saved=JSON.parse(localStorage.getItem('classRecordStudents')||'[]');
+   const verify=Array.isArray(saved)?saved.find(x=>String(x.id??'').trim().toLowerCase()===activeStudentId.trim().toLowerCase()):null;
+   if(!verify||verify.studentPassword!==pw){setMsg('studentPortalChangeMsg','The password was not saved. Please try again or contact your teacher.','error');return;}
+   $('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';
+   showDashboard(verify);
+  }catch(err){console.error('Unable to save student password:',err);setMsg('studentPortalChangeMsg','Unable to save the password in this browser. Check that browser storage is available, then try again.','error');}
  }
 
  function showDashboard(st){hideAll();$('studentPortalDashboard').classList.remove('hidden');const portalSwitcher=document.querySelector('#studentPortal .login-as-switcher');if(portalSwitcher)portalSwitcher.classList.add('hidden');const authSwitcher=$('loginAsSwitcher');if(authSwitcher)authSwitcher.classList.add('hidden');$('studentPortalWelcome').textContent='Welcome, '+studentName(st)+'!';const schoolHeading=$('studentPortalSchoolName');if(schoolHeading){const profile=typeof teacherProfile==='function'?teacherProfile():{};const schoolName=(profile&&profile.schoolName)||((account()||{}).school)||((account()||{}).schoolName)||'';schoolHeading.textContent=schoolName;schoolHeading.style.display=schoolName?'block':'none';}$('studentPortalIdLine').textContent='Student ID: '+st.id;const portalPhoto=$('studentPortalPhoto'),portalPhotoPlaceholder=$('studentPortalPhotoPlaceholder');if(portalPhoto){portalPhoto.src=st.photo||'';portalPhoto.style.display=st.photo?'block':'none'}if(portalPhotoPlaceholder)portalPhotoPlaceholder.style.display=st.photo?'none':'inline-flex';try{populateSemesters();renderSubjects()}catch(err){console.error('Student dashboard display issue:',err);$('studentPortalSubjectCount').textContent='0';$('studentPortalSubjects').innerHTML='<div class="student-portal-muted">Your password was saved. Subject and grade information could not be loaded right now. Please contact your teacher.</div>';}}
+ window.showOnlineStudentDashboard=st=>{activeStudentId=String(st?.id||'');showDashboard(st)};window.populateStudentPortal=()=>{populateSemesters();renderSubjects()};
  function populateSemesters(){
   const sel=$('studentPortalSemester'); const old=sel.value;
   let sems=typeof getSemesters==='function' ? getSemesters() : [];
@@ -1751,50 +1648,44 @@ document.addEventListener('DOMContentLoaded',()=>{
  function switchStudentSubject(index){activeSubjectTab=Math.max(0,Number(index)||0);activeComponentTab=0;renderSubjects();}
  function switchStudentComponent(subjectIndex,componentIndex){if(Number(subjectIndex)!==activeSubjectTab){activeSubjectTab=Number(subjectIndex)||0;activeComponentTab=Number(componentIndex)||0;}else{activeComponentTab=Number(componentIndex)||0;}renderSubjects();}
 
- document.addEventListener('click',e=>{const subjectTab=e.target.closest('[data-student-subject-tab]');if(subjectTab){e.preventDefault();switchStudentSubject(subjectTab.dataset.studentSubjectTab);return}const componentTab=e.target.closest('[data-student-component-tab]');if(componentTab){e.preventDefault();switchStudentComponent(componentTab.dataset.studentSubjectOwner,componentTab.dataset.studentComponentTab);return}if(e.target.closest('#portalLoginAsTeacher')){e.preventDefault();closeStudentPortal();return}if(e.target.closest('#portalLoginAsStudent')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#loginAsStudent')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#loginAsTeacher')){e.preventDefault();const authSwitcher=$('loginAsSwitcher');if(authSwitcher)authSwitcher.classList.remove('hidden');$('studentPortal').classList.add('hidden');$('loginAsTeacher').classList.add('active');$('loginAsTeacher').setAttribute('aria-pressed','true');$('loginAsStudent').classList.remove('active');$('loginAsStudent').setAttribute('aria-pressed','false');$('auth').classList.remove('hidden');$('app').classList.add('hidden');if(account())showLogin();else showRegister();return}if(e.target.closest('#openStudentLoginFromRegister')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#studentPortalLogout,#studentPortalCancelChange')){e.preventDefault();studentApi('/auth/logout',{method:'POST'}).catch(()=>{}).finally(()=>{onlineStudentUser=null;activeStudentId='';openStudentLogin()});return}if(e.target.closest('#studentPortalTogglePassword')){e.preventDefault();const input=$('studentPortalPassword'),button=$('studentPortalTogglePassword');if(studentPasswordRevealTimer)clearTimeout(studentPasswordRevealTimer);if(input.type==='password'){input.type='text';button.setAttribute('aria-label','Password visible; hide now');button.title='Password visible; hide now';button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16.7 16.7 0 0 1-3.1 3.7"/><path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10.7 10.7 0 0 0 4-.8"/></svg>';studentPasswordRevealTimer=setTimeout(()=>{input.type='password';button.setAttribute('aria-label','Reveal password');button.title='Reveal password';button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';studentPasswordRevealTimer=null},1000)}else{input.type='password';button.setAttribute('aria-label','Reveal password');button.title='Reveal password'}return}});
+ document.addEventListener('click',e=>{const subjectTab=e.target.closest('[data-student-subject-tab]');if(subjectTab){e.preventDefault();switchStudentSubject(subjectTab.dataset.studentSubjectTab);return}const componentTab=e.target.closest('[data-student-component-tab]');if(componentTab){e.preventDefault();switchStudentComponent(componentTab.dataset.studentSubjectOwner,componentTab.dataset.studentComponentTab);return}if(e.target.closest('#portalLoginAsTeacher')){e.preventDefault();closeStudentPortal();return}if(e.target.closest('#portalLoginAsStudent')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#loginAsStudent')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#loginAsTeacher')){e.preventDefault();const authSwitcher=$('loginAsSwitcher');if(authSwitcher)authSwitcher.classList.remove('hidden');$('studentPortal').classList.add('hidden');$('loginAsTeacher').classList.add('active');$('loginAsTeacher').setAttribute('aria-pressed','true');$('loginAsStudent').classList.remove('active');$('loginAsStudent').setAttribute('aria-pressed','false');$('auth').classList.remove('hidden');$('app').classList.add('hidden');if(account())showLogin();else showRegister();return}if(e.target.closest('#openStudentLoginFromRegister')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#studentPortalLogout,#studentPortalCancelChange')){e.preventDefault();openStudentLogin();return}if(e.target.closest('#studentPortalTogglePassword')){e.preventDefault();const input=$('studentPortalPassword'),button=$('studentPortalTogglePassword');if(studentPasswordRevealTimer)clearTimeout(studentPasswordRevealTimer);if(input.type==='password'){input.type='text';button.setAttribute('aria-label','Password visible; hide now');button.title='Password visible; hide now';button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16.7 16.7 0 0 1-3.1 3.7"/><path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10.7 10.7 0 0 0 4-.8"/></svg>';studentPasswordRevealTimer=setTimeout(()=>{input.type='password';button.setAttribute('aria-label','Reveal password');button.title='Reveal password';button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';studentPasswordRevealTimer=null},1000)}else{input.type='password';button.setAttribute('aria-label','Reveal password');button.title='Reveal password'}return}});
  $('studentPortalLoginForm').addEventListener('submit',login);$('studentPortalChangePasswordForm').addEventListener('submit',saveNewPassword,true);$('studentPortalSavePasswordBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveNewPassword(e)});$('studentPortalSemester').addEventListener('change',()=>{activeSubjectTab=0;activeComponentTab=0;populateTerms();$('studentPortalSemesterSummary').textContent=$('studentPortalSemester').value||'—';renderSubjects()});$('studentPortalTerm').addEventListener('change',()=>{activeComponentTab=0;renderSubjects()});
  // Expose a small, explicit entry point for the login screen.
  window.openStudentLoginPortal=openStudentLogin;
 })();
 </script>
 
-
-<script id="online-sync-layer">
-/* Online-version add-on: keeps the existing Version 93 UI and local backup intact.
-   Teacher snapshots sync through the authenticated Cloudflare Worker session. */
+<script id="class-record-online-bridge">
+/* Online adapter for the original TEACHER CLASS RECORD HTML. Keep this script last. */
 (function(){
  'use strict';
  const API='https://classrecord-api.erwinalcamphorjr.workers.dev';
- const ACCOUNT='classRecordAccount', SESSION='classRecordLoggedIn';
- const EXCLUDE=new Set([ACCOUNT,SESSION,'classRecordTeacherSecurity']);
- let hydrated=false, busy=false, timer=null, lastSaved='', queued=false;
- const status=document.createElement('div');
- status.id='onlineSyncStatus';
- status.setAttribute('role','status');
- status.style.cssText='position:fixed;z-index:99999;right:12px;bottom:12px;max-width:calc(100vw - 24px);padding:8px 12px;border-radius:9px;background:#172033;color:#fff;font:12px/1.4 system-ui,sans-serif;box-shadow:0 3px 14px #0002;';
- status.textContent='Online sync: waiting for sign-in';
- document.body.appendChild(status);
- function say(t,good){status.textContent='Online sync: '+t;status.style.background=good?'#166534':'#7c2d12';}
- function payload(){const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('classRecord')&&!EXCLUDE.has(k)&&!/(password|token|secret|credential|session)/i.test(k)){const v=localStorage.getItem(k);if(typeof v==='string')data[k]=v;}}return data;}
- function applyRemote(data){if(!data||typeof data!=='object'||Array.isArray(data))return false;let count=0;for(const [k,v] of Object.entries(data)){if(typeof k==='string'&&k.startsWith('classRecord')&&!EXCLUDE.has(k)&&!/(password|token|secret|credential|session)/i.test(k)&&typeof v==='string'){localStorage.setItem(k,v);count++;}}return count>0;}
- async function request(path,options={}){const r=await fetch(API+path,{credentials:'include',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});let j={};try{j=await r.json()}catch(_){}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j;}
- async function load(){if(busy)return;busy=true;try{say('checking secure session…');const me=await request('/auth/me',{method:'GET'});if(!me||!me.user){say('please sign in again',false);hydrated=false;return;}const remote=await request('/api/data',{method:'GET'});const data=remote.data&&typeof remote.data==='object'?remote.data:(remote.data_json&&typeof remote.data_json==='object'?remote.data_json:null);if(data&&Object.keys(data).length){applyRemote(data);lastSaved=JSON.stringify(payload());say('records loaded from cloud',true);}else{const data=payload();await request('/api/data',{method:'POST',body:JSON.stringify({data})});lastSaved=JSON.stringify(data);say('first sync complete',true);}hydrated=true;}catch(e){hydrated=false;say('not connected — local changes remain in this browser',false);console.warn('Online sync load:',e);}finally{busy=false;}}
- async function saveNow(){if(!hydrated||busy)return;busy=true;try{const data=payload(),encoded=JSON.stringify(data);if(encoded===lastSaved){say('all changes saved',true);return;}await request('/api/data',{method:'POST',body:JSON.stringify({data})});lastSaved=encoded;say('all changes saved to cloud',true);}catch(e){say('save failed — local copy kept; check sign-in/internet',false);console.warn('Online sync save:',e);}finally{busy=false;if(queued){queued=false;schedule();}}}
- function schedule(){if(!hydrated)return;queued=true;if(timer)clearTimeout(timer);timer=setTimeout(()=>{queued=false;saveNow();},1200);}
- // Queue sync for all existing feature writes without replacing the original app logic.
- const nativeSet=Storage.prototype.setItem;
- Storage.prototype.setItem=function(key,value){const result=nativeSet.call(this,key,value);if(this===localStorage&&typeof key==='string'&&key.startsWith('classRecord')&&!EXCLUDE.has(key)&&hydrated)schedule();return result;};
- const nativeRemove=Storage.prototype.removeItem;
- Storage.prototype.removeItem=function(key){const result=nativeRemove.call(this,key);if(this===localStorage&&typeof key==='string'&&key.startsWith('classRecord')&&!EXCLUDE.has(key)&&hydrated)schedule();return result;};
- // Wait until the existing teacher login has established its cookie, then hydrate before rendering.
- const originalOpen=window.openApp;
- // openApp is a top-level function declaration, so replace it while retaining the same UI flow.
- window.openApp=async function(){const ac=typeof account==='function'?account():null;if(!ac){if(typeof showRegister==='function')showRegister();return;}await load();if(typeof originalOpen==='function')originalOpen();};
- // On page reload, the app should only open after the server confirms the session.
- document.addEventListener('DOMContentLoaded',()=>{if(sessionStorage.getItem(SESSION)==='true'&&localStorage.getItem(ACCOUNT)){load().then(()=>{if(typeof originalOpen==='function')originalOpen();});}});
- window.addEventListener('online',()=>{if(hydrated)schedule();});
- window.addEventListener('beforeunload',()=>{if(hydrated&&queued){/* Debounced requests cannot be guaranteed on close; use normal save before leaving. */}});
+ const TOKEN_KEY='classRecordOnlineToken';
+ const $=id=>document.getElementById(id);
+ let role='',syncTimer=null,syncBusy=false,loadingCloud=false,studentId='';
+ const originalSet=localStorage.setItem.bind(localStorage),originalRemove=localStorage.removeItem.bind(localStorage);
+ const excluded=new Set(['classRecordAccount','classRecordTeacherSecurity','classRecordOnlineToken']);
+ function token(){return localStorage.getItem(TOKEN_KEY)||''}
+ async function request(path,opts={}){const headers={'Content-Type':'application/json',...(opts.headers||{})};if(token())headers.Authorization='Bearer '+token();const res=await fetch(API+path,{...opts,headers,credentials:'include'});let data={};try{data=await res.json()}catch{}if(!res.ok)throw Error(data.error||('Request failed ('+res.status+')'));return data}
+ function localData(){const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||!k.startsWith('classRecord')||excluded.has(k))continue;try{data[k]=JSON.parse(localStorage.getItem(k))}catch{data[k]=localStorage.getItem(k)}}return data}
+ function safeStudentRecords(list){return(Array.isArray(list)?list:[]).map(s=>{const x={...s};for(const k of Object.keys(x))if(/password|credential|secret|securityanswer/i.test(k))delete x[k];return x})}
+ function applyData(data,studentMode=false){loadingCloud=true;try{const keys=new Set(Object.keys(data||{}));for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('classRecord')&&!excluded.has(k)&&(!studentMode||k!=='classRecordAccount')&&!keys.has(k))originalRemove(k)}for(const [k,v] of Object.entries(data||{})){if(!k.startsWith('classRecord')||excluded.has(k))continue;const value=k==='classRecordStudents'?safeStudentRecords(v):v;originalSet(k,JSON.stringify(value))}}finally{loadingCloud=false}}
+ async function syncNow(){if(role!=='teacher'||syncBusy||!token())return;syncBusy=true;try{await request('/api/data',{method:'POST',body:JSON.stringify({data:localData()})});const note=$('onlineSyncStatus');if(note){note.textContent='Online · Saved';note.style.color='#167447'}}catch(e){console.error('Online save failed:',e);const note=$('onlineSyncStatus');if(note){note.textContent='Offline · Changes not synced';note.style.color='#b45309'}}finally{syncBusy=false}}
+ function scheduleSync(){if(loadingCloud||role!=='teacher')return;if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,900)}
+ localStorage.setItem=function(k,v){originalSet(k,v);if(String(k).startsWith('classRecord'))scheduleSync()};
+ localStorage.removeItem=function(k){originalRemove(k);if(String(k).startsWith('classRecord'))scheduleSync()};
+ async function loginTeacher(e){e.preventDefault();e.stopImmediatePropagation();const msg=$('loginMsg');try{const r=await request('/auth/teacher-login',{method:'POST',body:JSON.stringify({username:$('loginUsername').value.trim(),password:$('loginPassword').value})});originalSet(TOKEN_KEY,r.token);role='teacher';const old=(()=>{try{return JSON.parse(localStorage.getItem('classRecordAccount')||'{}')}catch{return {}}})();originalSet('classRecordAccount',JSON.stringify({...old,username:r.user.username||$('loginUsername').value.trim(),fullName:r.user.full_name||old.fullName||r.user.username,password:''}));const cloud=await request('/api/data');if(cloud.data&&Object.keys(cloud.data).length)applyData(cloud.data);else await request('/api/data',{method:'POST',body:JSON.stringify({data:localData()})});sessionStorage.setItem('classRecordLoggedIn','true');if(typeof window.openApp==='function')window.openApp();else{document.getElementById('auth')?.classList.add('hidden');document.getElementById('app')?.classList.remove('hidden')}addSyncIndicator();scheduleSync()}catch(err){if(msg){msg.textContent=err.message;msg.className='msg error';msg.style.display='block'}}}
+ function addSyncIndicator(){const h=document.querySelector('.teacher-header')||document.querySelector('#home');if(h&&!$('onlineSyncStatus')){const p=document.createElement('p');p.id='onlineSyncStatus';p.className='muted';p.style.fontSize='12px';p.textContent='Online · Connected';h.appendChild(p)}}
+ async function loginStudent(e){e.preventDefault();e.stopImmediatePropagation();const msg=$('studentPortalLoginMsg');try{const id=($('studentPortalUsername').value||'').trim(),pw=$('studentPortalPassword').value;const r=await request('/auth/student-login',{method:'POST',body:JSON.stringify({studentId:id,username:id,password:pw})});originalSet(TOKEN_KEY,r.token);role='student';studentId=String(r.user.id);$('studentPortalPassword').value='';const pack=await request('/api/student-data');applyData(pack.data||{},true);let list=[];try{list=JSON.parse(localStorage.getItem('classRecordStudents')||'[]')}catch{}let st=list.find(x=>String(x.id)===studentId);if(!st){st={id:studentId,firstName:(r.user.full_name||'').split(' ')[0],lastName:(r.user.full_name||'').split(' ').slice(1).join(' '),email:r.user.email||''};originalSet('classRecordStudents',JSON.stringify([st]))}if(r.must_change_password||r.user.must_change_password){document.querySelectorAll('#studentPortalLogin,#studentPortalDashboard').forEach(x=>x.classList.add('hidden'));$('studentPortalChangePassword').classList.remove('hidden');const n=$('studentPortalChangeMsg');if(n){n.textContent='Please create a new password to continue.';n.className='student-portal-msg'}$('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';$('studentPortalNewPassword').focus()}else{if(typeof window.showOnlineStudentDashboard==='function')window.showOnlineStudentDashboard(st);else{document.querySelector('#studentPortalLogin')?.classList.add('hidden');document.querySelector('#studentPortalDashboard')?.classList.remove('hidden');$('studentPortalWelcome').textContent='Welcome, '+[st.firstName,st.mi,st.lastName,st.suffix].filter(Boolean).join(' ')+'!';$('studentPortalIdLine').textContent='Student ID: '+st.id;document.querySelector('#studentPortal .login-as-switcher')?.classList.add('hidden');document.querySelector('#loginAsSwitcher')?.classList.add('hidden');try{if(typeof window.populateStudentPortal==='function')window.populateStudentPortal()}catch{}}}}catch(err){if(msg){msg.textContent=err.message;msg.className='student-portal-msg error'}}}
+ async function changeStudentPassword(e){e.preventDefault();e.stopImmediatePropagation();const msg=$('studentPortalChangeMsg'),pw=String($('studentPortalNewPassword').value||''),confirm=String($('studentPortalConfirmPassword').value||'');if(pw.length<8){if(msg)msg.textContent='Password must be at least 8 characters.';return}if(pw==='Student@123'){if(msg)msg.textContent='Choose a password different from the default.';return}if(pw!==confirm){if(msg)msg.textContent='The passwords do not match.';return}try{await request('/api/student/change-password',{method:'POST',body:JSON.stringify({newPassword:pw})});$('studentPortalNewPassword').value='';$('studentPortalConfirmPassword').value='';const list=JSON.parse(localStorage.getItem('classRecordStudents')||'[]');const st=list.find(x=>String(x.id)===studentId)||{id:studentId,firstName:'Student'};if(msg){msg.textContent='Password saved securely online.';msg.className='student-portal-msg success'}setTimeout(()=>{if(typeof window.showOnlineStudentDashboard==='function'){window.showOnlineStudentDashboard(st);return}document.querySelector('#studentPortalChangePassword')?.classList.add('hidden');document.querySelector('#studentPortalDashboard')?.classList.remove('hidden');document.querySelector('#studentPortal .login-as-switcher')?.classList.add('hidden');document.querySelector('#loginAsSwitcher')?.classList.add('hidden');$('studentPortalWelcome').textContent='Welcome, '+[st.firstName,st.mi,st.lastName,st.suffix].filter(Boolean).join(' ')+'!';$('studentPortalIdLine').textContent='Student ID: '+studentId;try{if(typeof window.populateSemesters==='function')window.populateSemesters();if(typeof window.renderSubjects==='function')window.renderSubjects()}catch{}},350)}catch(err){if(msg){msg.textContent=err.message;msg.className='student-portal-msg error'}}}
+ async function resetStudentPassword(e){e.preventDefault();e.stopImmediatePropagation();const pw=$('temporaryStudentPassword')?.value||'';const id=(()=>{const text=$('resetStudentPasswordStudent')?.textContent||'';const m=text.match(/ID:\s*([^\)]+)/);return m?m[1].trim():''})();const msg=$('resetStudentPasswordMsg');if(!id||!pw){if(msg)msg.textContent='Generate a temporary password first.';return}try{await request('/api/students/reset-password',{method:'POST',body:JSON.stringify({studentId:id,temporaryPassword:pw})});const list=JSON.parse(localStorage.getItem('classRecordStudents')||'[]');const st=list.find(x=>String(x.id)===id);if(st){delete st.studentPassword;delete st.temporaryPassword;delete st.temporaryPasswordGeneratedAt;originalSet('classRecordStudents',JSON.stringify(list))}if(msg){msg.textContent='Temporary password saved online. Copy it and provide it privately to the student.';msg.className='msg success'}let copy=$('copyTemporaryStudentPassword');if(!copy){copy=document.createElement('button');copy.id='copyTemporaryStudentPassword';copy.type='button';copy.className='secondary';copy.textContent='Copy Password';msg?.appendChild(document.createTextNode(' '));msg?.appendChild(copy);copy.onclick=async()=>{try{await navigator.clipboard.writeText(pw);if(msg)msg.textContent='Password copied. Provide it privately to the student.'}catch{ $('temporaryStudentPassword').select();document.execCommand('copy')}}}}catch(err){if(msg){msg.textContent=err.message;msg.className='msg error'}}}
+ // Catch form submissions before the original offline-only handlers.
+ document.addEventListener('submit',e=>{if(e.target?.id==='loginForm'){loginTeacher(e);return}if(e.target?.id==='studentPortalLoginForm'){loginStudent(e);return}if(e.target?.id==='studentPortalChangePasswordForm'){changeStudentPassword(e);return}},true);
+ document.addEventListener('click',e=>{if(e.target?.closest('#saveTemporaryStudentPassword')){resetStudentPassword(e);return}if(e.target?.closest('#studentPortalSavePasswordBtn')){changeStudentPassword(e);return}if(e.target?.closest('#studentPortalLogout,#studentPortalCancelChange')){if(token())request('/auth/logout',{method:'POST'}).catch(()=>{});originalRemove(TOKEN_KEY);role='';studentId='';return}if(e.target?.closest('#loginAsTeacher,#loginAsStudent,#portalLoginAsTeacher,#portalLoginAsStudent')){if(token())request('/auth/logout',{method:'POST'}).catch(()=>{});originalRemove(TOKEN_KEY);role='';studentId=''}},true);
+ // Restore an existing online session after refresh. Never upload passwords from the browser.
+ (async()=>{if(!token())return;try{const me=await request('/auth/me');role=me.user.role;if(role==='teacher'){const r=await request('/api/data');if(r.data&&Object.keys(r.data).length)applyData(r.data);addSyncIndicator();scheduleSync()}else if(role==='student'){studentId=String(me.user.id);const r=await request('/api/student-data');applyData(r.data||{},true)}}catch(e){console.warn('Online session expired or unavailable:',e.message);originalRemove(TOKEN_KEY)}})();
+ window.addEventListener('online',()=>{if(role==='teacher')syncNow()});
 })();
-</script>
 
+</script>
 </body></html>
