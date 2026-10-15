@@ -1476,8 +1476,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     const password=$('temporaryStudentPassword').value;if(!password){showMessage('Click Generate first to create a temporary password.','error');return;}
     const list=studentList(),student=list.find(x=>String(x.id)===selectedStudentId);if(!student){showMessage('Student record not found.','error');return;}
     student.temporaryPassword=password;student.temporaryPasswordGeneratedAt=new Date().toISOString();
-    try{localStorage.setItem('classRecordStudents',JSON.stringify(list));showMessage('Temporary password saved in this browser. Copy it and provide it privately to the student.','success');
-      let copy=$('copyTemporaryStudentPassword');if(!copy){copy=document.createElement('button');copy.id='copyTemporaryStudentPassword';copy.type='button';copy.className='secondary';copy.style.marginTop='8px';copy.textContent='Copy Password';$('resetStudentPasswordMsg').appendChild(document.createTextNode(' '));$('resetStudentPasswordMsg').appendChild(copy);copy.addEventListener('click',copyPassword);}
+    try{localStorage.setItem('classRecordStudents',JSON.stringify(list));
+      // Try to copy the saved temporary password before closing the reset dialog.
+      // The password remains saved even if clipboard access is unavailable.
+      const finishClose=()=>{showMessage('Temporary password saved. If it was not copied automatically, reopen Reset Password to view or copy it.','success');setTimeout(closeReset,250);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(password).then(finishClose).catch(finishClose)}else finishClose();
     }catch(_){showMessage('Unable to save the temporary password in browser storage.','error');}
   }
   async function copyPassword(){const field=$('temporaryStudentPassword');try{await navigator.clipboard.writeText(field.value);showMessage('Password copied. Provide it privately to the student.','success');}catch(_){field.focus();field.select();try{document.execCommand('copy');showMessage('Password selected for copying. Provide it privately to the student.','success');}catch(__){showMessage('Select the password and copy it manually.','error');}}}
@@ -1565,8 +1568,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   <section id="studentPortalChangePassword" class="student-portal-card student-portal-form hidden">
    <h1 style="margin-bottom:6px">Create Your Password</h1><p class="student-portal-muted">For your account's safety, create a new password before continuing.</p>
    <form id="studentPortalChangePasswordForm">
-    <label for="studentPortalNewPassword">New Password</label><input id="studentPortalNewPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
-    <label for="studentPortalConfirmPassword">Confirm New Password</label><input id="studentPortalConfirmPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="Re-enter your new password">
+    <label for="studentPortalNewPassword">New Password</label><div class="password-wrap"><input id="studentPortalNewPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"><button type="button" class="password-toggle" data-password-target="studentPortalNewPassword" aria-label="Show password" title="Show password"><span class="eye-closed">👁</span></button></div>
+    <label for="studentPortalConfirmPassword">Confirm New Password</label><div class="password-wrap"><input id="studentPortalConfirmPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="Re-enter your new password"><button type="button" class="password-toggle" data-password-target="studentPortalConfirmPassword" aria-label="Show password" title="Show password"><span class="eye-closed">👁</span></button></div>
     <button class="primary" id="studentPortalSavePasswordBtn" type="button" data-confirm-bypass="1" style="width:100%">Save Password and Continue</button><div id="studentPortalChangeMsg" class="student-portal-msg" role="status"></div>
     <button type="button" class="secondary" id="studentPortalCancelChange">Log Out</button>
    </form>
