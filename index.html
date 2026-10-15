@@ -1436,6 +1436,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('change',function(e){if(e.target&&e.target.id==='sbirthday'){const birth=e.target.value;const age=byId('sage');if(age&&birth){const d=new Date(birth+'T00:00:00'),now=new Date();let years=now.getFullYear()-d.getFullYear();if(now.getMonth()<d.getMonth()||(now.getMonth()===d.getMonth()&&now.getDate()<d.getDate()))years--;age.value=years>=0?years:''}}},true);
 })();
 </script>
+
+<style id="student-password-confirm-layer-fix">
+/* Keep action confirmations above the Reset Student Password dialog. */
+#actionConfirmModal { z-index: 1002; }
+</style>
 <div class="modal hidden" id="resetStudentPasswordModal" role="dialog" aria-modal="true" aria-labelledby="resetStudentPasswordTitle">
   <div class="modal-card" style="width:min(460px,100%)">
     <div class="modal-header"><div><h2 id="resetStudentPasswordTitle" style="margin:0">Reset Student Password</h2><p class="muted" id="resetStudentPasswordStudent" style="margin:5px 0 0">Generate a temporary password for this student.</p></div><button class="close" id="closeResetStudentPassword" type="button" aria-label="Close">×</button></div>
