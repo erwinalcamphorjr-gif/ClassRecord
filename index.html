@@ -473,7 +473,7 @@ function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 
 function formatClassRecordDate(v){const s=String(v||'').trim();if(!s)return '';const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[2]}/${m[3]}/${m[1].slice(-2)}`:s}
 function showRegister(){$('registerCard').classList.remove('hidden');$('loginCard').classList.add('hidden')}
-function showLogin(){$('registerCard').classList.add('hidden');$('loginCard').classList.remove('hidden')}
+function showLogin(){const loginMessage=$('loginMsg');if(loginMessage){loginMessage.textContent='';loginMessage.className='msg';loginMessage.style.display='none'}$('registerCard').classList.add('hidden');$('loginCard').classList.remove('hidden')}
 function msg(id,text,type){const el=$(id);el.textContent=text;el.className='msg '+type;el.style.display='block'}
 function calculateAge(birthday){if(!birthday)return '—';const birth=new Date(birthday+'T00:00:00');if(Number.isNaN(birth.getTime()))return '—';const today=new Date();let age=today.getFullYear()-birth.getFullYear();if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))age--;return age>=0?age:'—'}
 function sortStudents(a){return a.slice().sort((x,y)=>String(x.lastName||'').localeCompare(String(y.lastName||''),undefined,{sensitivity:'base',numeric:true})||String(x.firstName||'').localeCompare(String(y.firstName||''),undefined,{sensitivity:'base',numeric:true}))}
