@@ -387,51 +387,7 @@ function scheduleCloudSave(){if(!cloudSyncReady||!localStorage.getItem(AUTH_TOKE
 async function initializeCloudSync(){const token=localStorage.getItem(AUTH_TOKEN_KEY);if(!token)return;try{const response=await fetch(API_BASE+'/api/data',{method:'GET',credentials:'omit',headers:{'Authorization':'Bearer '+token}});const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'Could not load online records.');const remote=result.data&&typeof result.data==='object'?result.data:{};if(Object.keys(remote).length){for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);if(key&&key.startsWith('classRecord')&&![ACCOUNT_KEY,SESSION_KEY,AUTH_TOKEN_KEY,TEACHER_SECURITY_KEY,'classRecordStudentSessionId'].includes(key)&&!(key in remote))localStorage.removeItem(key)}for(const [key,value] of Object.entries(remote)){if(key.startsWith('classRecord')&&typeof value==='string'&&![ACCOUNT_KEY,SESSION_KEY,AUTH_TOKEN_KEY,TEACHER_SECURITY_KEY,'classRecordStudentSessionId'].includes(key))localStorage.setItem(key,value)}}else{await saveSnapshotOnline(false)}cloudSyncReady=true;const status=$('onlineBackupStatus');if(status)status.textContent='Online records connected. Changes will be saved automatically.'}catch(err){console.error('Online data initialization failed:',err);cloudSyncReady=false;onlineBackupMessage('Could not connect to your online records. Your browser data has not been uploaded automatically. Please check the connection before making changes.','error')}}
 const originalLocalStorageSetItem=Storage.prototype.setItem;
 Storage.prototype.setItem=function(key,value){originalLocalStorageSetItem.call(this,key,value);if(this===localStorage&&typeof key==='string'&&key.startsWith('classRecord')&&![ACCOUNT_KEY,SESSION_KEY,AUTH_TOKEN_KEY,TEACHER_SECURITY_KEY,'classRecordStudentSessionId'].includes(key))scheduleCloudSave()};
-$('downloadOnlineBackupBtn')?.addEventListener('click',async()=>{
-  const token=localStorage.getItem(AUTH_TOKEN_KEY);
-  if(!token){onlineBackupMessage('Please log in as the teacher first.','error');return;}
-  const btn=$('downloadOnlineBackupBtn');
-  btn.disabled=true;btn.textContent='Checking online records…';
-  try{
-    let response=await fetch(API_BASE+'/api/data',{method:'GET',credentials:'omit',cache:'no-store',headers:{'Authorization':'Bearer '+token,'Cache-Control':'no-cache'}});
-    let result=await response.json().catch(()=>({}));
-    if(!response.ok)throw new Error(result.error||'Unable to retrieve online records (HTTP '+response.status+').');
-    let data=result.data&&typeof result.data==='object'&&!Array.isArray(result.data)?result.data:{};
-    let savedAt=result.updatedAt||result.updated_at||null;
-
-    // Only upload this browser's records if the server explicitly returned no records.
-    // Never replace a non-empty online record set with local data.
-    if(!Object.keys(data).length){
-      const localSnapshot=cloudDataSnapshot();
-      if(!Object.keys(localSnapshot).length){
-        throw new Error('The online account returned no class records, and this browser has no class records to upload. No backup file was created. Please open the device that contains your class records and confirm that Online Backup says the records are saved online.');
-      }
-      onlineBackupMessage('No records were found online. Saving this device’s records online, then checking them…');
-      response=await fetch(API_BASE+'/api/data',{method:'POST',credentials:'omit',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({data:localSnapshot})});
-      result=await response.json().catch(()=>({}));
-      if(!response.ok||result.status!=='ok')throw new Error(result.error||'Could not save this device’s records online (HTTP '+response.status+').');
-      response=await fetch(API_BASE+'/api/data',{method:'GET',credentials:'omit',cache:'no-store',headers:{'Authorization':'Bearer '+token,'Cache-Control':'no-cache'}});
-      result=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(result.error||'Could not verify the online save (HTTP '+response.status+').');
-      data=result.data&&typeof result.data==='object'&&!Array.isArray(result.data)?result.data:{};
-      savedAt=result.updatedAt||result.updated_at||null;
-    }
-    if(!Object.keys(data).length)throw new Error('Cloudflare still returned an empty record set after checking the save. No empty backup file was created. Your online records have not been deleted.');
-    const payload={appName:'Teacher Class Record',backupType:'online-account-snapshot',downloadedAt:new Date().toISOString(),data,updatedAt:savedAt};
-    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');
-    a.href=url;a.download='TeacherClassRecord_OnlineBackup_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
-    a.style.display='none';document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-    const count=Object.keys(data).length;
-    onlineBackupMessage('Backup downloaded with '+count+' saved data item(s).','success');
-    const status=$('onlineBackupStatus');
-    if(status)status.textContent=savedAt?'Online data last updated: '+new Date(savedAt).toLocaleString():'Backup downloaded; the server did not provide an update timestamp.';
-  }catch(err){
-    console.error('Online backup download failed:',err);
-    onlineBackupMessage(err.message||'Could not download online backup.','error');
-  }finally{btn.disabled=false;btn.textContent='Download Online Backup';}
-});
+$('downloadOnlineBackupBtn')?.addEventListener('click',async()=>{const token=localStorage.getItem(AUTH_TOKEN_KEY);if(!token)return onlineBackupMessage('Please log in as the teacher first.','error');const btn=$('downloadOnlineBackupBtn');btn.disabled=true;btn.textContent='Preparing backup…';try{const response=await fetch(API_BASE+'/api/data',{method:'GET',credentials:'omit',headers:{'Authorization':'Bearer '+token}});const result=await response.json();if(!response.ok)throw new Error(result.error||'Unable to download online backup.');const payload={appName:'Teacher Class Record',backupType:'online-account-snapshot',downloadedAt:new Date().toISOString(),data:result.data||{},updatedAt:result.updated_at||null};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='TeacherClassRecord_OnlineBackup_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);onlineBackupMessage('Online backup downloaded successfully.','success');const status=$('onlineBackupStatus');if(status)status.textContent='Online data last updated: '+(result.updated_at?new Date(result.updated_at).toLocaleString():'date not provided')}catch(err){onlineBackupMessage(err.message||'Could not download online backup.','error')}finally{btn.disabled=false;btn.textContent='Download Online Backup'}});
 function safeJSON(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}}
 function account(){return safeJSON(ACCOUNT_KEY,null)}function teacherProfile(){return safeJSON(TEACHER_PROFILE_KEY,{schoolName:'',schoolAddress:'',schoolContact:'',schoolEmail:'',areaDesignation:''})}
 const SECURITY_QUESTIONS=['What was the name of your first school?','What is the name of your favorite teacher?','What was the name of your first pet?','What is your favorite food?','What city or town were you born in?','What was the first book you remember reading?'];
