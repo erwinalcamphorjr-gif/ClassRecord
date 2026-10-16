@@ -868,7 +868,9 @@ $('sidebarAccountName')&&( $('sidebarAccountName').textContent=(account()||{}).f
 $('logout').addEventListener('click',async()=>{
  const token=localStorage.getItem(AUTH_TOKEN_KEY)||'';
  if(token){try{await fetch('https://classrecord-api.erwinalcamphorjr.workers.dev/auth/logout',{method:'POST',credentials:'omit',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}})}catch(error){console.warn('Cloudflare logout request failed:',error)}}
- localStorage.removeItem(AUTH_TOKEN_KEY);sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);$('app').classList.add('hidden');$('auth').classList.remove('hidden');showLogin()
+ localStorage.removeItem(AUTH_TOKEN_KEY);sessionStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_KEY);$('app').classList.add('hidden');$('auth').classList.remove('hidden');showLogin();
+ const loginMessage=$('loginMsg');
+ if(loginMessage){loginMessage.textContent='';loginMessage.className='msg';loginMessage.style.display='none'}
 });
 
 $('printClassListBtn')?.addEventListener('click',openClassListPrintModal);$('closeClassListPrintModal')?.addEventListener('click',closeClassListPrintModal);$('cancelClassListPrint')?.addEventListener('click',closeClassListPrintModal);$('confirmClassListPrint')?.addEventListener('click',openClassListPrintLayoutModal);$('printClassListSchoolYear')?.addEventListener('change',updateClassListPrintSemesters);$('printClassListSemester')?.addEventListener('change',updateClassListPrintTerms);$('printClassListClass')?.addEventListener('change',updateClassListPrintSections);$('printClassListSection')?.addEventListener('change',updateClassListPrintSubjects);
