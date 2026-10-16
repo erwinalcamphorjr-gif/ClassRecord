@@ -320,6 +320,45 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
  #viewStudentAttendancePanel .setup-row{padding:8px!important;font-size:12px;}
 }
 </style>
+<style id="student-dashboard-attendance-fit-screen-v1">
+/* Student dashboard: fit the Attendance summary on screen without sideways scrolling. */
+#studentPortal .student-portal-table-wrap:has(table.student-attendance-summary-table){
+  width:100%;max-width:100%;min-width:0;overflow-x:hidden!important;overflow-y:visible;box-sizing:border-box;
+}
+#studentPortal table.student-attendance-summary-table{
+  width:100%!important;min-width:0!important;max-width:100%;table-layout:fixed!important;border-collapse:collapse;
+}
+#studentPortal table.student-attendance-summary-table th,
+#studentPortal table.student-attendance-summary-table td{
+  box-sizing:border-box;min-width:0!important;max-width:none!important;padding:6px 3px!important;
+  font-size:10px;line-height:1.2;white-space:normal!important;overflow-wrap:anywhere;word-break:normal;vertical-align:middle;
+}
+#studentPortal table.student-attendance-summary-table th{font-size:9px;line-height:1.15;}
+#studentPortal table.student-attendance-summary-table th:nth-child(1),
+#studentPortal table.student-attendance-summary-table td:nth-child(1){width:12%;}
+#studentPortal table.student-attendance-summary-table th:nth-child(2),
+#studentPortal table.student-attendance-summary-table td:nth-child(2),
+#studentPortal table.student-attendance-summary-table th:nth-child(3),
+#studentPortal table.student-attendance-summary-table td:nth-child(3),
+#studentPortal table.student-attendance-summary-table th:nth-child(4),
+#studentPortal table.student-attendance-summary-table td:nth-child(4),
+#studentPortal table.student-attendance-summary-table th:nth-child(5),
+#studentPortal table.student-attendance-summary-table td:nth-child(5){width:11%;}
+#studentPortal table.student-attendance-summary-table th:nth-child(6),
+#studentPortal table.student-attendance-summary-table td:nth-child(6){width:12%;}
+#studentPortal table.student-attendance-summary-table th:nth-child(7),
+#studentPortal table.student-attendance-summary-table td:nth-child(7),
+#studentPortal table.student-attendance-summary-table th:nth-child(8),
+#studentPortal table.student-attendance-summary-table td:nth-child(8),
+#studentPortal table.student-attendance-summary-table th:nth-child(9),
+#studentPortal table.student-attendance-summary-table td:nth-child(9){width:7%;}
+@media(max-width:700px){
+  #studentPortal .student-component-panel{padding:9px!important;}
+  #studentPortal table.student-attendance-summary-table th,
+  #studentPortal table.student-attendance-summary-table td{padding:4px 2px!important;font-size:8px;line-height:1.15;}
+  #studentPortal table.student-attendance-summary-table th{font-size:7px;}
+}
+</style>
 </head>
 <body>
 <div class="auth" id="auth">
