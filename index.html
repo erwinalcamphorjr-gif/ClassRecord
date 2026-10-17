@@ -736,7 +736,15 @@ function studentScore(scope,studentId,activityId,termId){
  if(!scope)return undefined;
  const activity=getClassRecordActivities().find(a=>String(a.id)===String(activityId));
  if(!activity||String(activity.schoolYearId)!==String(scope.y)||String(activity.classId)!==String(scope.c)||String(activity.sectionId)!==String(scope.s)||String(activity.semesterId)!==String(scope.sem)||String(activity.termId)!==String(termId)||String(activity.subjectId||'')!==String(scope.sub))return undefined;
- const matches=getClassRecordScores().filter(x=>String(x.studentId)===String(studentId)&&String(x.activityId)===String(activityId)&&String(x.schoolYearId)===String(scope.y)&&String(x.classId)===String(scope.c)&&String(x.sectionId)===String(scope.s)&&String(x.semesterId)===String(scope.sem)&&String(x.termId)===String(termId)&&(!x.subjectId||String(x.subjectId)===String(scope.sub)));
+ // The activity above has already been verified against this subject's full academic context.
+ // Some saved score rows contain only studentId/activityId; accept omitted context fields,
+ // but reject any context or subject field that is present and conflicts with this scope.
+ const matches=getClassRecordScores().filter(x=>{
+  if(String(x.studentId??x.student_id??x.studentID??'')!==String(studentId))return false;
+  if(String(x.activityId??x.activity_id??'')!==String(activityId))return false;
+  const sameIfPresent=(value,expected)=>value===undefined||value===null||String(value)===''||String(value)===String(expected);
+  return sameIfPresent(x.schoolYearId,scope.y)&&sameIfPresent(x.classId,scope.c)&&sameIfPresent(x.sectionId,scope.s)&&sameIfPresent(x.semesterId,scope.sem)&&sameIfPresent(x.termId,termId)&&sameIfPresent(x.subjectId,scope.sub);
+ });
  const entered=matches.find(x=>x.score!==undefined&&x.score!==null&&String(x.score).trim()!=='');
  return (entered||matches[0])?.score;
 }
