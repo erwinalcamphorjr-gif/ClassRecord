@@ -696,11 +696,34 @@ function renderStudentSubjectsView(studentId){
 function getClassRecordGrades(){const v=safeJSON(CLASS_RECORD_GRADES_KEY,[]);return Array.isArray(v)?v:[]}
 function termLabel(term){return String(term||'').replace(/Term\/Period$/,'').trim()}
 function studentGradeScope(studentId,subjectId,semesterName){
- const sem=getSemesters().find(x=>String(x.name)===String(semesterName));
- if(!sem)return null;
- const enrollment=getSubjectEnrollments().find(e=>String(e.studentId)===String(studentId)&&String(e.semester)===String(semesterName)&&Array.isArray(e.subjectIds)&&e.subjectIds.some(id=>String(id)===String(subjectId)));
+ // Resolve the subject's own enrollment first. Different subjects may have
+ // semesters with the same display name but different database IDs.
+ const enrollment=getSubjectEnrollments().find(e=>
+   String(e.studentId)===String(studentId) &&
+   String(e.semester||'')===String(semesterName) &&
+   Array.isArray(e.subjectIds) &&
+   e.subjectIds.some(id=>String(id)===String(subjectId))
+ );
  if(!enrollment)return null;
- return {y:String(sem.schoolYearId||''),c:String(enrollment.classId||''),s:String(enrollment.sectionId||''),sem:String(sem.id||''),sub:String(subjectId)};
+ const semesters=getSemesters();
+ let sem=null;
+ if(enrollment.semesterId){
+   sem=semesters.find(x=>String(x.id)===String(enrollment.semesterId))||null;
+ }
+ if(!sem){
+   sem=semesters.find(x=>
+     String(x.name)===String(semesterName) &&
+     (!enrollment.schoolYearId || String(x.schoolYearId||'')===String(enrollment.schoolYearId))
+   )||null;
+ }
+ if(!sem)return null;
+ return {
+   y:String(enrollment.schoolYearId||sem.schoolYearId||''),
+   c:String(enrollment.classId||''),
+   s:String(enrollment.sectionId||''),
+   sem:String(enrollment.semesterId||sem.id||''),
+   sub:String(subjectId)
+ };
 }
 function studentComponentList(scope){
  if(!scope)return [];
