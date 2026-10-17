@@ -1759,22 +1759,39 @@ document.addEventListener('DOMContentLoaded',()=>{
   display.textContent=year?.name||'—';
  }
  function esc(v){return typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
- function populateTerms(){const sel=$('studentPortalTerm'),semester=$('studentPortalSemester').value,sem=(typeof getSemesters==='function'?getSemesters():[]).find(s=>String(s.name)===String(semester));const terms=sem&&typeof getAcademicTerms==='function'?getAcademicTerms().filter(t=>String(t.semesterId)===String(sem.id)):[];const old=sel.value;sel.innerHTML=terms.map(t=>`<option value="${esc(t.id)}">${esc(typeof termLabel==='function'?termLabel(t.name):t.name)}</option>`).join('')+'<option value="__SEMESTRAL__">Semestral Grade</option>';if(Array.from(sel.options).some(o=>o.value===old))sel.value=old;else if(terms.length)sel.value=terms[0].id;else sel.value='__SEMESTRAL__';}
+ function enrollmentForStudentSubject(studentId,subjectId,semesterName){
+  return (typeof getSubjectEnrollments==='function'?getSubjectEnrollments():[]).find(e=>String(e.studentId)===String(studentId)&&String(e.semester||'')===String(semesterName)&&Array.isArray(e.subjectIds)&&e.subjectIds.some(id=>String(id)===String(subjectId)))||null;
+ }
+ function termsForStudentSubject(studentId,subjectId,semesterName){
+  const enrollment=enrollmentForStudentSubject(studentId,subjectId,semesterName);
+  if(!enrollment||typeof getAcademicTerms!=='function')return [];
+  const semesterId=String(enrollment.semesterId||'');
+  return getAcademicTerms().filter(t=>String(t.semesterId)===semesterId);
+ }
+ function populateTerms(semesterName,subjectId){
+  const sel=$('studentPortalTerm'),semester=semesterName??$('studentPortalSemester').value;
+  const terms=subjectId?termsForStudentSubject(activeStudentId,subjectId,semester):[];
+  const old=sel.value;
+  sel.innerHTML=terms.map(t=>`<option value="${esc(t.id)}">${esc(typeof termLabel==='function'?termLabel(t.name):t.name)}</option>`).join('')+'<option value="__SEMESTRAL__">Semestral Grade</option>';
+  if(Array.from(sel.options).some(o=>o.value===old))sel.value=old;else if(terms.length)sel.value=terms[0].id;else sel.value='__SEMESTRAL__';
+ }
  let activeSubjectTab=0,activeComponentTab=0;
  function renderSubjects(){
   if(!activeStudentId)return;
-  populateTerms();
-  const semName=$('studentPortalSemester').value,mode=$('studentPortalTerm').value;
+  const semName=$('studentPortalSemester').value;
   let rows=typeof studentSubjectsForSemester==='function'?studentSubjectsForSemester(activeStudentId,semName):[];
   const active=rows.filter(r=>!r.drop);
+  if(activeSubjectTab>=active.length)activeSubjectTab=0;
+  populateTerms(semName,active[activeSubjectTab]?.subjectId);
+  const mode=$('studentPortalTerm').value;
   $('studentPortalSubjectCount').textContent=active.length;
-  const terms=typeof getAcademicTerms==='function'&&typeof getSemesters==='function'?getAcademicTerms().filter(t=>String(t.semesterId)===String(getSemesters().find(s=>String(s.name)===String(semName))?.id)):[];
   const host=$('studentPortalSubjects');
   if(!active.length){host.innerHTML='<div class="student-portal-muted">No subjects are currently enrolled for this semester.</div>';return}
   if(activeSubjectTab>=active.length)activeSubjectTab=0;
   const subjectButtons=active.map((r,i)=>`<button type="button" class="student-subject-tab ${i===activeSubjectTab?'active':''}" data-student-subject-tab="${i}" aria-selected="${i===activeSubjectTab?'true':'false'}">${esc(r.subject)}</button>`).join('');
   const subjectPanels=active.map((r,i)=>{
    const scope=typeof studentGradeScope==='function'?studentGradeScope(activeStudentId,r.subjectId,semName):null;
+   const subjectTerms=termsForStudentSubject(activeStudentId,r.subjectId,semName);
    if(!scope)return `<section class="student-subject-content ${i===activeSubjectTab?'':'hidden'}" data-student-subject-panel="${i}"><p class="student-portal-muted">Grade setup is not available for this subject.</p></section>`;
    const comps=typeof studentComponentList==='function'?studentComponentList(scope):[];
    if(!comps.length)return `<section class="student-subject-content ${i===activeSubjectTab?'':'hidden'}" data-student-subject-panel="${i}"><p class="student-portal-muted">No grading components have been configured by your teacher for this subject.</p></section>`;
@@ -1784,14 +1801,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     const selected=ci===compIndex;
     let acts=[],avg=null,weight=Number(c.weight)||0,periodLabel='';
     if(mode==='__SEMESTRAL__'){
-     terms.forEach(t=>{const arr=typeof studentActivityList==='function'?studentActivityList(scope,c.id,t.id):[];arr.forEach(a=>acts.push({...a,_termLabel:typeof termLabel==='function'?termLabel(t.name):t.name,_termId:t.id}));});
-     const termGrades=terms.map(t=>({grade:typeof studentComponentGrade==='function'?studentComponentGrade(scope,activeStudentId,c,t.id):null,weight:typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0}));
+     subjectTerms.forEach(t=>{const arr=typeof studentActivityList==='function'?studentActivityList(scope,c.id,t.id):[];arr.forEach(a=>acts.push({...a,_termLabel:typeof termLabel==='function'?termLabel(t.name):t.name,_termId:t.id}));});
+     const termGrades=subjectTerms.map(t=>({grade:typeof studentComponentGrade==='function'?studentComponentGrade(scope,activeStudentId,c,t.id):null,weight:typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0}));
      let total=0,has=false;termGrades.forEach(x=>{if(x.grade!==null&&x.weight>0){total+=x.grade*x.weight/100;has=true}});avg=has?total:null;periodLabel='Semestral Grade';
      if(String(c.name||'').trim().toLowerCase()==='attendance')avg=studentAttendanceSummaryForScope(scope,activeStudentId,'__SEMESTRAL__').average;
     }else{
      acts=typeof studentActivityList==='function'?studentActivityList(scope,c.id,mode):[];
      avg=typeof studentComponentGrade==='function'?studentComponentGrade(scope,activeStudentId,c,mode):null;
-     const t=terms.find(x=>String(x.id)===String(mode));periodLabel=t?(typeof termLabel==='function'?termLabel(t.name):t.name):'Selected Term/Period';
+     const t=subjectTerms.find(x=>String(x.id)===String(mode));periodLabel=t?(typeof termLabel==='function'?termLabel(t.name):t.name):'Selected Term/Period';
     }
     acts=acts.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base'}));
     const activityHeads=acts.map(a=>`<th>${esc(a.name||'Activity')}${a._termLabel?`<div class="student-portal-muted">${esc(a._termLabel)}</div>`:''}<div class="student-portal-muted">Max: ${esc(Number(a.maxScore)||0)}</div></th>`).join('');
@@ -1811,10 +1828,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     return `<section class="student-component-panel ${selected?'':'hidden'}" data-student-component-panel="${ci}" data-student-subject-owner="${i}"><div class="student-portal-heading"><div><h3 style="margin:0">${esc(c.name||('Component '+(ci+1)))}</h3><p class="student-portal-muted" style="margin:5px 0 12px">${esc(periodLabel)} · Component weight: ${esc(weight.toFixed(2)+'%')}</p></div><div><strong>Average: ${avg===null?'—':esc(avg.toFixed(2)+'%')}</strong></div></div>${activityTable}</section>`;
    }).join('');
    let subjectGrade='—';
-   if(mode==='__SEMESTRAL__'){let total=0,has=false;terms.forEach(t=>{const g=typeof studentTermGrade==='function'?studentTermGrade(scope,activeStudentId,t.id):null,w=typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0;if(g!==null&&w>0){total+=g*w/100;has=true}});subjectGrade=has?total.toFixed(2)+'%':'—';}
+   if(mode==='__SEMESTRAL__'){let total=0,has=false;subjectTerms.forEach(t=>{const g=typeof studentTermGrade==='function'?studentTermGrade(scope,activeStudentId,t.id):null,w=typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0;if(g!==null&&w>0){total+=g*w/100;has=true}});subjectGrade=has?total.toFixed(2)+'%':'—';}
    else {const g=typeof studentTermGrade==='function'?studentTermGrade(scope,activeStudentId,mode):null;subjectGrade=g===null?'—':g.toFixed(2)+'%';}
    if(mode==='__SEMESTRAL__'){
-    const semestralRows=terms.map(t=>{const grade=typeof studentTermGrade==='function'?studentTermGrade(scope,activeStudentId,t.id):null;const weight=typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0;const contribution=grade!==null&&weight>0?grade*weight/100:null;return {name:typeof termLabel==='function'?termLabel(t.name):t.name,grade,weight,contribution}});
+    const semestralRows=subjectTerms.map(t=>{const grade=typeof studentTermGrade==='function'?studentTermGrade(scope,activeStudentId,t.id):null;const weight=typeof studentTermWeight==='function'?studentTermWeight(scope,t.id):0;const contribution=grade!==null&&weight>0?grade*weight/100:null;return {name:typeof termLabel==='function'?termLabel(t.name):t.name,grade,weight,contribution}});
     const semestralTotal=semestralRows.reduce((sum,t)=>sum+(t.contribution===null?0:t.contribution),0);
     const hasSemestralGrade=semestralRows.some(t=>t.contribution!==null);
     const semestralTable=`<div class="student-portal-table-wrap" style="margin-top:12px"><table class="student-component-table student-semestral-grade-table"><thead><tr><th>Term/Period</th><th>Period Grade</th><th>% Weight</th><th>Contribution</th><th>Grade</th></tr></thead><tbody>${semestralRows.map(t=>`<tr><td>${esc(t.name)}</td><td>${t.grade===null?'—':esc(t.grade.toFixed(2)+'%')}</td><td>${t.weight>0?esc(t.weight.toFixed(2)+'%'):'—'}</td><td>${t.contribution===null?'—':esc(t.contribution.toFixed(2)+'%')}</td><td>${t.contribution===null?'—':esc(t.contribution.toFixed(2)+'%')}</td></tr>`).join('')}<tr><th>Semestral</th><th>—</th><th>${esc(semestralRows.reduce((sum,t)=>sum+(Number(t.weight)||0),0).toFixed(2)+'%')}</th><th>${hasSemestralGrade?esc(semestralTotal.toFixed(2)+'%'):'—'}</th><th><strong>${hasSemestralGrade?esc(semestralTotal.toFixed(2)+'%'):'—'}</strong></th></tr></tbody></table></div>`;
