@@ -413,14 +413,14 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
      <section class="admin-view active" data-admin-panel="teachers">
       <div class="admin-panel"><h2>Teacher Accounts</h2><p class="muted">Search using the teacher's last name. Teacher records remain hidden until you search.</p>
        <div class="admin-search-row"><div><label for="adminTeacherSearch">Teacher last name</label><input id="adminTeacherSearch" type="search" placeholder="Enter all or part of last name" autocomplete="off"></div><button class="primary" type="button" id="adminTeacherSearchBtn">Search Teachers</button><button class="secondary" type="button" id="adminTeacherClearBtn">Clear</button></div>
-       <div id="adminTeacherPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminTeachersEmpty" class="admin-empty">Enter a teacher's last name and select Search Teachers to display matching accounts.</div>
+       <div id="adminTeacherPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminTeachersEmpty" class="admin-empty">Start typing a teacher's last name to display matching accounts.</div>
        <div id="adminTeachersResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
       </div>
      </section>
      <section class="admin-view" data-admin-panel="students">
       <div class="admin-panel"><h2>Student Accounts</h2><p class="muted">Search using the student's Student ID. Student records remain hidden until you search.</p>
        <div class="admin-search-row"><div><label for="adminStudentSearch">Student ID</label><input id="adminStudentSearch" type="search" placeholder="Enter Student ID" autocomplete="off"></div><button class="primary" type="button" id="adminStudentSearchBtn">Search Students</button><button class="secondary" type="button" id="adminStudentClearBtn">Clear</button></div>
-       <div id="adminStudentPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminStudentsEmpty" class="admin-empty">Enter a Student ID and select Search Students to display matching accounts.</div>
+       <div id="adminStudentPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminStudentsEmpty" class="admin-empty">Start typing a Student ID to display matching accounts.</div>
        <div id="adminStudentsResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
       </div>
      </section>
@@ -1931,7 +1931,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (function(){
  const API='https://classrecord-api.erwinalcamphorjr.workers.dev';
  const $=id=>document.getElementById(id);
- let token='', adminUsername='Admin2026', allTeachers=[], allStudents=[], resetTarget=null;
+ let token='', adminUsername='Admin2026', adminSessionPassword='', allTeachers=[], allStudents=[], resetTarget=null;
  function msg(id,text,error=false){const el=$(id);if(!el)return;el.textContent=text;el.classList.remove('hidden');el.style.background=error?'#fee2e2':'#dcfce7';el.style.color=error?'#991b1b':'#166534';}
  function clearMsg(id){const el=$(id);if(el){el.textContent='';el.classList.add('hidden')}}
  async function request(path,data={},includeToken=true){
@@ -1947,7 +1947,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('adminRoot').classList.remove('hidden');$('adminLoginPanel').classList.remove('hidden');$('adminDashboard').classList.add('hidden');
   $('adminUsername').value='';$('adminLoginPassword').value='';clearMsg('adminLoginMsg');
  }
- function exitAdmin(){token='';allTeachers=[];allStudents=[];$('adminRoot').classList.add('hidden');$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('loginAsSwitcher').classList.remove('hidden');if(typeof account==='function'){if(account())showLogin();else showRegister();}}
+ function exitAdmin(){token='';adminSessionPassword='';allTeachers=[];allStudents=[];$('adminRoot').classList.add('hidden');$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('loginAsSwitcher').classList.remove('hidden');if(typeof account==='function'){if(account())showLogin();else showRegister();}}
  function temporaryPassword(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';const bytes=new Uint32Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>chars[b%chars.length]).join('');}
  async function protectedAction(path,payload,verb){const adminPassword=prompt('Enter your CURRENT admin password to '+verb+':');if(adminPassword===null)return null;return request(path,{...payload,adminPassword});}
  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -1957,29 +1957,28 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('adminTeachersBody').innerHTML='';$('adminStudentsBody').innerHTML='';
   $('adminTeachersResults').classList.add('hidden');$('adminStudentsResults').classList.add('hidden');
   $('adminTeachersEmpty').classList.remove('hidden');$('adminStudentsEmpty').classList.remove('hidden');
-  $('adminTeachersEmpty').textContent="Enter a teacher's last name and select Search Teachers to display matching accounts.";
-  $('adminStudentsEmpty').textContent='Enter a Student ID and select Search Students to display matching accounts.';
+  $('adminTeachersEmpty').textContent="Start typing a teacher's last name to display matching accounts.";
+  $('adminStudentsEmpty').textContent='Start typing a Student ID to display matching accounts.';
  }
  async function loadAccounts(){
   clearMsg('adminMsg');
   try{
-   const adminPassword=prompt('Enter your CURRENT admin password to securely load account records:');
-   if(adminPassword===null)return;
-   const data=await request('/admin/accounts',{adminPassword});
+   if(!adminSessionPassword){msg('adminMsg','Please log in again to securely load account records.',true);return;}
+   const data=await request('/admin/accounts',{adminPassword:adminSessionPassword});
    allTeachers=data.teachers||[];allStudents=data.students||[];resetSearchViews();
    msg('adminMsg','Account records loaded securely. Search by teacher last name or student ID to display accounts.');
   }catch(e){msg('adminMsg',e.message,true)}
  }
  function searchTeachers(){
   const q=$('adminTeacherSearch').value.trim().toLowerCase();
-  if(!q){$('adminTeachersBody').innerHTML='';$('adminTeachersResults').classList.add('hidden');$('adminTeachersEmpty').classList.remove('hidden');$('adminTeachersEmpty').textContent="Enter a teacher's last name and select Search Teachers to display matching accounts.";return;}
+  if(!q){$('adminTeachersBody').innerHTML='';$('adminTeachersResults').classList.add('hidden');$('adminTeachersEmpty').classList.remove('hidden');$('adminTeachersEmpty').textContent="Start typing a teacher's last name to display matching accounts.";return;}
   const found=allTeachers.filter(t=>{const name=String(t.full_name||'').trim().toLowerCase();const parts=name.split(/\s+/);const last=parts.length?parts[parts.length-1]:'';return last.includes(q);});
   $('adminTeachersBody').innerHTML=found.map(t=>`<tr><td>${esc(t.full_name)}</td><td>${esc(t.username)}</td><td>${esc(t.email)}</td><td>${esc(t.created_at)}</td><td><button class="admin-action" data-admin="reset-teacher" data-id="${esc(t.id)}">Generate Reset Password</button><button class="admin-action admin-secondary" data-admin="scratch" data-id="${esc(t.id)}">Reset to Scratch</button><button class="admin-action admin-danger" data-admin="delete-teacher" data-id="${esc(t.id)}">Delete Permanently</button></td></tr>`).join('');
   $('adminTeachersResults').classList.toggle('hidden',found.length===0);$('adminTeachersEmpty').classList.toggle('hidden',found.length>0);$('adminTeachersEmpty').textContent=found.length?'':`No teacher found with last name matching “${q}”.`;
  }
  function searchStudents(){
   const q=$('adminStudentSearch').value.trim().toLowerCase();
-  if(!q){$('adminStudentsBody').innerHTML='';$('adminStudentsResults').classList.add('hidden');$('adminStudentsEmpty').classList.remove('hidden');$('adminStudentsEmpty').textContent='Enter a Student ID and select Search Students to display matching accounts.';return;}
+  if(!q){$('adminStudentsBody').innerHTML='';$('adminStudentsResults').classList.add('hidden');$('adminStudentsEmpty').classList.remove('hidden');$('adminStudentsEmpty').textContent='Start typing a Student ID to display matching accounts.';return;}
   const found=allStudents.filter(s=>String(s.student_number||'').trim().toLowerCase().includes(q));
   $('adminStudentsBody').innerHTML=found.map(s=>`<tr><td>${esc(s.full_name)}</td><td>${esc(s.student_number)}</td><td>${esc(s.email)}</td><td>${esc(s.created_at)}</td><td><button class="admin-action" data-admin="reset-student" data-id="${esc(s.id)}">Generate Reset Password</button><button class="admin-action admin-danger" data-admin="delete-student" data-id="${esc(s.id)}">Delete Permanently</button></td></tr>`).join('');
   $('adminStudentsResults').classList.toggle('hidden',found.length===0);$('adminStudentsEmpty').classList.toggle('hidden',found.length>0);$('adminStudentsEmpty').textContent=found.length?'':`No student found with Student ID matching “${q}”.`;
@@ -1988,7 +1987,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  $('adminBackToLogin').addEventListener('click',exitAdmin);
  $('adminLoginForm').addEventListener('submit',async e=>{
   e.preventDefault();clearMsg('adminLoginMsg');
-  try{const r=await request('/auth/admin-login',{username:$('adminUsername').value.trim(),password:$('adminLoginPassword').value},false);token=r.token;adminUsername=r.user?.username||'Admin';$('adminLoginPanel').classList.add('hidden');$('adminDashboard').classList.remove('hidden');$('adminRoot').classList.remove('hidden');$('adminLoginPassword').value='';showView('teachers');await loadAccounts();}
+  try{const enteredPassword=$('adminLoginPassword').value;const r=await request('/auth/admin-login',{username:$('adminUsername').value.trim(),password:enteredPassword},false);token=r.token;adminSessionPassword=enteredPassword;adminUsername=r.user?.username||'Admin';$('adminLoginPanel').classList.add('hidden');$('adminDashboard').classList.remove('hidden');$('adminRoot').classList.remove('hidden');$('adminLoginPassword').value='';showView('teachers');await loadAccounts();}
   catch(err){msg('adminLoginMsg',err.message,true)}
  });
  document.querySelectorAll('[data-admin-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.adminView)));
@@ -2006,7 +2005,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const currentPassword=prompt('Enter your current admin password:');if(currentPassword===null)return;
   const newPassword=prompt('Enter a new admin password (10 characters minimum):');if(newPassword===null)return;
   const confirmPassword=prompt('Re-enter the new admin password:');if(confirmPassword===null)return;
-  try{const r=await request('/admin/change-password',{currentPassword,newPassword,confirmPassword});msg('adminMsg',r.message||'Admin password changed.');}
+  try{const r=await request('/admin/change-password',{currentPassword,newPassword,confirmPassword});adminSessionPassword=newPassword;msg('adminMsg',r.message||'Admin password changed.');}
   catch(e){msg('adminMsg',e.message,true)}
  });
  document.addEventListener('click',async e=>{
