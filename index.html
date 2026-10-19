@@ -374,6 +374,9 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
 <style>
 #adminRoot{min-height:100vh;background:#f3f6f9;padding:0;color:#1e293b}
 .admin-wrap{max-width:none;margin:0;min-height:100vh}.admin-shell{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.admin-sidebar{background:#172554;color:#fff;padding:24px 14px;display:flex;flex-direction:column;gap:8px}.admin-brand{font-size:19px;font-weight:800;padding:0 10px 22px}.admin-brand small{display:block;font-size:11px;color:#bfdbfe;font-weight:400;margin-top:5px}.admin-nav-label{font-size:10px;letter-spacing:.1em;color:#93c5fd;font-weight:800;padding:10px 10px 4px}.admin-nav-btn{width:100%;border:1px solid transparent;background:transparent;color:#dbeafe;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px;font-weight:700;cursor:pointer}.admin-nav-btn:hover{background:#1e3a8a}.admin-nav-btn.active{background:#1d4ed8;border-color:#60a5fa;color:#fff}.admin-sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid #334155}.admin-main{padding:26px;min-width:0}.admin-view{display:none}.admin-view.active{display:block}.admin-panel{background:#fff;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 3px 12px #0000000d}.admin-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.admin-table-wrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}.admin-table th{background:#f8fafc}.admin-action{border:0;border-radius:7px;padding:7px 9px;margin:2px;background:#2563eb;color:white;font-weight:600}.admin-danger{background:#dc2626}.admin-secondary{background:#475569}.admin-msg{padding:10px;border-radius:8px;margin:10px 0;white-space:pre-wrap}.admin-note{background:#fff7ed;color:#9a3412;padding:12px;border-radius:8px}.admin-search-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:14px 0}.admin-search-row>div{flex:1;min-width:220px}.admin-search-row label{margin-top:0}.admin-search-hint{font-size:12px;color:#64748b;margin-top:7px}.admin-empty{padding:18px;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;margin-top:14px}.admin-danger-panel{border:1px solid #fecaca}.admin-danger-panel h2{color:#991b1b}
+#adminLoginPanel form>label{display:block;margin-top:14px}#adminLoginPanel form>.password-wrap{margin-bottom:22px}#adminLoginPanel form>button[type="submit"]{display:block;margin-top:14px!important;min-height:42px;padding:10px 18px}#adminLoginPanel form>label+input{margin-bottom:2px}
+#adminLoginPanel .password-wrap{position:relative;display:flex;align-items:center}#adminLoginPanel .password-wrap input{width:100%;padding-right:48px}#adminLoginPanel .password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;padding:8px;color:#475569}
+.admin-live-preview{font-size:12px;color:#475569;margin-top:6px;min-height:16px;line-height:1.5}.admin-password-generation-row{display:flex;gap:8px;align-items:stretch}.admin-password-generation-row .password-wrap{position:relative;display:flex;align-items:center;flex:1;min-width:0}.admin-password-generation-row input{width:100%;padding-right:44px}.admin-password-generation-row .password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;padding:8px;color:#475569}.admin-password-generation-row>button{min-width:96px}@media(max-width:480px){.admin-password-generation-row{flex-wrap:wrap}.admin-password-generation-row>button{width:100%}}
 @media(max-width:800px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;padding:14px;gap:5px}.admin-brand{padding-bottom:8px}.admin-sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.admin-nav-label{grid-column:1/-1}.admin-sidebar-footer{margin-top:8px}.admin-main{padding:14px}.admin-panel{padding:14px}.admin-table{min-width:760px}}
 </style>
 <div id="adminRoot" class="hidden">
@@ -382,8 +385,8 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
    <h1>Class Record</h1><div class="sub">Administrator Login</div>
    <form id="adminLoginForm">
     <label for="adminUsername">Username</label><input id="adminUsername" autocomplete="username" required value=""/>
-    <label for="adminLoginPassword">Password</label><input id="adminLoginPassword" type="password" autocomplete="current-password" required/>
-    <button class="primary" type="submit">Log In as Admin</button>
+    <label for="adminLoginPassword">Password</label><div class="password-wrap"><input id="adminLoginPassword" type="password" autocomplete="current-password" required/><button aria-label="Show password" class="password-toggle" data-password-target="adminLoginPassword" title="Show password" type="button"><span>👁</span></button></div>
+    <button class="primary" style="margin-top:10px" type="submit">Log In as Admin</button>
    </form><div id="adminLoginMsg" class="admin-msg hidden"></div>
    <div class="link" id="adminBackToLogin">Back to Teacher / Student Login</div>
   </section>
@@ -410,14 +413,14 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
      <section class="admin-view active" data-admin-panel="teachers">
       <div class="admin-panel"><h2>Teacher Accounts</h2><p class="muted">Search using the teacher's last name. Teacher records remain hidden until you search.</p>
        <div class="admin-search-row"><div><label for="adminTeacherSearch">Teacher last name</label><input id="adminTeacherSearch" type="search" placeholder="Enter all or part of last name" autocomplete="off"></div><button class="primary" type="button" id="adminTeacherSearchBtn">Search Teachers</button><button class="secondary" type="button" id="adminTeacherClearBtn">Clear</button></div>
-       <div id="adminTeachersEmpty" class="admin-empty">Enter a teacher's last name and select Search Teachers to display matching accounts.</div>
+       <div id="adminTeacherPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminTeachersEmpty" class="admin-empty">Enter a teacher's last name and select Search Teachers to display matching accounts.</div>
        <div id="adminTeachersResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
       </div>
      </section>
      <section class="admin-view" data-admin-panel="students">
       <div class="admin-panel"><h2>Student Accounts</h2><p class="muted">Search using the student's Student ID. Student records remain hidden until you search.</p>
        <div class="admin-search-row"><div><label for="adminStudentSearch">Student ID</label><input id="adminStudentSearch" type="search" placeholder="Enter Student ID" autocomplete="off"></div><button class="primary" type="button" id="adminStudentSearchBtn">Search Students</button><button class="secondary" type="button" id="adminStudentClearBtn">Clear</button></div>
-       <div id="adminStudentsEmpty" class="admin-empty">Enter a Student ID and select Search Students to display matching accounts.</div>
+       <div id="adminStudentPreview" class="admin-live-preview" aria-live="polite"></div><div id="adminStudentsEmpty" class="admin-empty">Enter a Student ID and select Search Students to display matching accounts.</div>
        <div id="adminStudentsResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
       </div>
      </section>
@@ -1916,11 +1919,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 </script>
 
+<div class="modal hidden" id="adminResetPasswordModal" role="dialog" aria-modal="true" aria-labelledby="adminResetPasswordTitle" style="z-index:10050">
+ <div class="modal-content" style="max-width:520px;margin:8vh auto;background:#fff;border-radius:14px;padding:24px;box-shadow:0 20px 60px #0003">
+  <div class="modal-header" style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 id="adminResetPasswordTitle" style="margin:0">Reset Account Password</h2><p id="adminResetPasswordAccount" class="muted" style="margin:5px 0 0">Generate a temporary password.</p></div><button id="adminResetPasswordClose" type="button" class="close" aria-label="Close">×</button></div>
+  <div class="admin-note" style="margin-top:14px">Generate a temporary password, then save it to the account. Share it privately and ask the account owner to change it after signing in.</div>
+  <label for="adminTemporaryPassword" style="display:block;margin-top:16px">Temporary Password</label><div class="admin-password-generation-row"><div class="password-wrap"><input id="adminTemporaryPassword" type="password" readonly autocomplete="off" placeholder="Click Generate Password"><button aria-label="Reveal temporary password" class="password-toggle" data-password-target="adminTemporaryPassword" title="Reveal temporary password" type="button"><span>👁</span></button></div><button class="secondary" id="adminGeneratePassword" type="button">Generate</button></div>
+  <div id="adminResetPasswordMsg" class="admin-msg hidden" aria-live="polite"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="secondary" id="adminResetPasswordCancel" type="button">Cancel</button><button class="primary" id="adminSaveTemporaryPassword" type="button">Save Temporary Password</button></div>
+ </div>
+</div>
 <script>
 (function(){
  const API='https://classrecord-api.erwinalcamphorjr.workers.dev';
  const $=id=>document.getElementById(id);
- let token='', adminUsername='Admin2026', allTeachers=[], allStudents=[];
+ let token='', adminUsername='Admin2026', allTeachers=[], allStudents=[], resetTarget=null;
  function msg(id,text,error=false){const el=$(id);if(!el)return;el.textContent=text;el.classList.remove('hidden');el.style.background=error?'#fee2e2':'#dcfce7';el.style.color=error?'#991b1b':'#166534';}
  function clearMsg(id){const el=$(id);if(el){el.textContent='';el.classList.add('hidden')}}
  async function request(path,data={},includeToken=true){
@@ -1984,6 +1995,8 @@ document.addEventListener('DOMContentLoaded',()=>{
  $('adminRefresh').addEventListener('click',loadAccounts);
  $('adminTeacherSearchBtn').addEventListener('click',searchTeachers);
  $('adminStudentSearchBtn').addEventListener('click',searchStudents);
+ $('adminTeacherSearch').addEventListener('input',()=>{searchTeachers();const q=$('adminTeacherSearch').value.trim().toLowerCase();const matches=q?allTeachers.filter(t=>{const parts=String(t.full_name||'').trim().toLowerCase().split(/\s+/);return (parts[parts.length-1]||'').includes(q);}):[];$('adminTeacherPreview').textContent=q?(matches.length?`${matches.length} match(es): `+matches.slice(0,8).map(t=>t.full_name).join(' • ')+(matches.length>8?' • …':''):`No teacher matches “${q}”.`):'';});
+ $('adminStudentSearch').addEventListener('input',()=>{searchStudents();const q=$('adminStudentSearch').value.trim().toLowerCase();const matches=q?allStudents.filter(st=>String(st.student_number||'').trim().toLowerCase().includes(q)):[];$('adminStudentPreview').textContent=q?(matches.length?`${matches.length} match(es): `+matches.slice(0,8).map(st=>`${st.full_name} (ID: ${st.student_number})`).join(' • ')+(matches.length>8?' • …':''):`No student ID matches “${q}”.`):'';});
  $('adminTeacherSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchTeachers()}});
  $('adminStudentSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchStudents()}});
  $('adminTeacherClearBtn').addEventListener('click',()=>{$('adminTeacherSearch').value='';searchTeachers();$('adminTeacherSearch').focus()});
@@ -2001,10 +2014,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const action=b.dataset.admin,id=b.dataset.id;
   try{
    if(action==='reset-teacher'||action==='reset-student'){
-    const password=temporaryPassword();if(!confirm('Generate a temporary password for this account?'))return;
-    const path=action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';
-    const resetResult=await protectedAction(path,{accountId:id,temporaryPassword:password},'reset this password');if(!resetResult)return;
-    alert('Temporary password (copy it now):\n\n'+password+'\n\nShare it securely with the account owner.');msg('adminMsg','Password reset completed. The generated temporary password was shown once.');
+    resetTarget={action,id};const row=b.closest('tr');const name=row?.cells?.[0]?.textContent||'Selected account';const identifier=row?.cells?.[1]?.textContent||'';
+    $('adminResetPasswordTitle').textContent=action==='reset-teacher'?'Reset Teacher Password':'Reset Student Password';$('adminResetPasswordAccount').textContent=name+(identifier?' ('+identifier+')':'');$('adminTemporaryPassword').value='';$('adminResetPasswordMsg').classList.add('hidden');$('adminResetPasswordModal').classList.remove('hidden');
    }else if(action==='scratch'){
     if(!confirm('Clear all saved online class-record data for this teacher? The teacher login account will remain.'))return;
     const r=await protectedAction('/admin/reset-teacher-scratch',{accountId:id},'reset this teacher to scratch');if(r)msg('adminMsg',r.message);
@@ -2016,6 +2027,11 @@ document.addEventListener('DOMContentLoaded',()=>{
    }
   }catch(err){msg('adminMsg',err.message,true)}
  });
+ function closeAdminReset(){ $('adminResetPasswordModal').classList.add('hidden');$('adminTemporaryPassword').value='';$('adminTemporaryPassword').type='password';const eye=$('adminTemporaryPassword').parentElement.querySelector('.password-toggle');if(eye){eye.setAttribute('aria-label','Reveal temporary password');eye.title='Reveal temporary password';}resetTarget=null; }
+ $('adminResetPasswordClose').addEventListener('click',closeAdminReset);$('adminResetPasswordCancel').addEventListener('click',closeAdminReset);
+ $('adminGeneratePassword').addEventListener('click',()=>{$('adminTemporaryPassword').value=temporaryPassword();$('adminResetPasswordMsg').textContent='Temporary password generated. Click “Save Temporary Password” to apply it.';$('adminResetPasswordMsg').classList.remove('hidden');});
+ $('adminSaveTemporaryPassword').addEventListener('click',async()=>{if(!resetTarget)return;const temporaryPasswordValue=$('adminTemporaryPassword').value;if(!temporaryPasswordValue){$('adminResetPasswordMsg').textContent='Click Generate first to create a temporary password.';$('adminResetPasswordMsg').classList.remove('hidden');return;}const target=resetTarget;const path=target.action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';try{const r=await protectedAction(path,{accountId:target.id,temporaryPassword:temporaryPasswordValue},'reset this password');if(!r)return;msg('adminMsg','Password reset completed. Temporary password: '+temporaryPasswordValue+' — copy it now and share it securely.');closeAdminReset();}catch(err){$('adminResetPasswordMsg').textContent=err.message;$('adminResetPasswordMsg').classList.remove('hidden');}});
+ document.querySelectorAll('[data-password-target]').forEach(btn=>btn.addEventListener('click',()=>{const input=$(btn.dataset.passwordTarget);if(!input)return;const showing=input.type==='password';input.type=showing?'text':'password';btn.setAttribute('aria-label',showing?'Hide password':'Show password');btn.title=showing?'Hide password':'Show password';}));
  $('adminEraseAll').addEventListener('click',async()=>{
   if(!confirm('WARNING: This permanently deletes ALL teacher accounts, ALL student accounts, and ALL academic data. The admin account remains. Continue?'))return;
   const confirmation=prompt('Type exactly DELETE ALL DATA to continue:');if(confirmation===null)return;
