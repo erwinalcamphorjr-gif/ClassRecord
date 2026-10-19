@@ -372,12 +372,9 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
 </div>
 
 <style>
-#adminRoot{min-height:100vh;background:#f3f6f9;padding:24px;color:#1e293b}
-.admin-wrap{max-width:1200px;margin:auto}.admin-panel{background:#fff;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 3px 12px #0000000d}
-.admin-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-.admin-table-wrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}.admin-table th{background:#f8fafc}
-.admin-action{border:0;border-radius:7px;padding:7px 9px;margin:2px;background:#2563eb;color:white;font-weight:600}.admin-danger{background:#dc2626}.admin-secondary{background:#475569}.admin-msg{padding:10px;border-radius:8px;margin:10px 0;white-space:pre-wrap}.admin-note{background:#fff7ed;color:#9a3412;padding:12px;border-radius:8px}
-@media(max-width:650px){#adminRoot{padding:12px}.admin-panel{padding:14px}.admin-table{min-width:760px}}
+#adminRoot{min-height:100vh;background:#f3f6f9;padding:0;color:#1e293b}
+.admin-wrap{max-width:none;margin:0;min-height:100vh}.admin-shell{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.admin-sidebar{background:#172554;color:#fff;padding:24px 14px;display:flex;flex-direction:column;gap:8px}.admin-brand{font-size:19px;font-weight:800;padding:0 10px 22px}.admin-brand small{display:block;font-size:11px;color:#bfdbfe;font-weight:400;margin-top:5px}.admin-nav-label{font-size:10px;letter-spacing:.1em;color:#93c5fd;font-weight:800;padding:10px 10px 4px}.admin-nav-btn{width:100%;border:1px solid transparent;background:transparent;color:#dbeafe;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px;font-weight:700;cursor:pointer}.admin-nav-btn:hover{background:#1e3a8a}.admin-nav-btn.active{background:#1d4ed8;border-color:#60a5fa;color:#fff}.admin-sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid #334155}.admin-main{padding:26px;min-width:0}.admin-view{display:none}.admin-view.active{display:block}.admin-panel{background:#fff;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 3px 12px #0000000d}.admin-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.admin-table-wrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}.admin-table th{background:#f8fafc}.admin-action{border:0;border-radius:7px;padding:7px 9px;margin:2px;background:#2563eb;color:white;font-weight:600}.admin-danger{background:#dc2626}.admin-secondary{background:#475569}.admin-msg{padding:10px;border-radius:8px;margin:10px 0;white-space:pre-wrap}.admin-note{background:#fff7ed;color:#9a3412;padding:12px;border-radius:8px}.admin-search-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:14px 0}.admin-search-row>div{flex:1;min-width:220px}.admin-search-row label{margin-top:0}.admin-search-hint{font-size:12px;color:#64748b;margin-top:7px}.admin-empty{padding:18px;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;margin-top:14px}.admin-danger-panel{border:1px solid #fecaca}.admin-danger-panel h2{color:#991b1b}
+@media(max-width:800px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;padding:14px;gap:5px}.admin-brand{padding-bottom:8px}.admin-sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.admin-nav-label{grid-column:1/-1}.admin-sidebar-footer{margin-top:8px}.admin-main{padding:14px}.admin-panel{padding:14px}.admin-table{min-width:760px}}
 </style>
 <div id="adminRoot" class="hidden">
  <div class="admin-wrap">
@@ -391,13 +388,44 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
    <div class="link" id="adminBackToLogin">Back to Teacher / Student Login</div>
   </section>
   <section id="adminDashboard" class="hidden">
-   <div class="admin-head"><div><h1 style="margin:0">Administrator Dashboard</h1><p class="muted">Manage accounts and permanently destructive actions.</p></div>
-   <div class="actions"><button class="primary" id="adminRefresh">Refresh Accounts</button><button class="primary" id="adminChangePassword">Change Admin Password</button><button class="danger" id="adminLogout">Log Out</button></div></div>
-   <div id="adminMsg" class="admin-msg hidden"></div>
-   <div class="admin-note">Every account action requires your current admin password. Reset passwords are temporary credentials; share them securely. Permanent deletions cannot be undone.</div>
-   <div class="admin-panel"><h2>Teacher Accounts</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminTeachersBody"><tr><td colspan="5">Load accounts to begin.</td></tr></tbody></table></div></div>
-   <div class="admin-panel"><h2>Student Accounts</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminStudentsBody"><tr><td colspan="5">Load accounts to begin.</td></tr></tbody></table></div></div>
-   <div class="admin-panel"><h2>Danger Zone</h2><p>Erase all teacher accounts, student accounts, and academic data. The admin account will remain.</p><button class="danger" id="adminEraseAll">PERMANENTLY DELETE ALL DATA</button></div>
+   <div class="admin-shell">
+    <aside class="admin-sidebar">
+     <div class="admin-brand">CLASS RECORD<small>Administrator Console</small></div>
+     <div class="admin-nav-label">ACCOUNT MANAGEMENT</div>
+     <nav aria-label="Admin navigation">
+      <button type="button" class="admin-nav-btn active" data-admin-view="teachers">👩‍🏫 Teachers</button>
+      <button type="button" class="admin-nav-btn" data-admin-view="students">🎓 Students</button>
+      <button type="button" class="admin-nav-btn" data-admin-view="danger">⚠️ Danger Zone</button>
+     </nav>
+     <div class="admin-sidebar-footer">
+      <button type="button" class="admin-nav-btn" id="adminRefresh">↻ Refresh Accounts</button>
+      <button type="button" class="admin-nav-btn" id="adminChangePassword">🔒 Change Admin Password</button>
+      <button type="button" class="admin-nav-btn" id="adminLogout">↩ Log Out</button>
+     </div>
+    </aside>
+    <main class="admin-main">
+     <div class="admin-head"><div><h1 style="margin:0">Administrator Dashboard</h1><p class="muted">Search for an account before its details and actions are displayed.</p></div></div>
+     <div id="adminMsg" class="admin-msg hidden"></div>
+     <div class="admin-note">Every account action requires your current admin password. Temporary passwords are shown once; share them securely. Permanent deletions cannot be undone.</div>
+     <section class="admin-view active" data-admin-panel="teachers">
+      <div class="admin-panel"><h2>Teacher Accounts</h2><p class="muted">Search using the teacher's last name. Teacher records remain hidden until you search.</p>
+       <div class="admin-search-row"><div><label for="adminTeacherSearch">Teacher last name</label><input id="adminTeacherSearch" type="search" placeholder="Enter all or part of last name" autocomplete="off"></div><button class="primary" type="button" id="adminTeacherSearchBtn">Search Teachers</button><button class="secondary" type="button" id="adminTeacherClearBtn">Clear</button></div>
+       <div id="adminTeachersEmpty" class="admin-empty">Enter a teacher's last name and select Search Teachers to display matching accounts.</div>
+       <div id="adminTeachersResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminTeachersBody"></tbody></table></div>
+      </div>
+     </section>
+     <section class="admin-view" data-admin-panel="students">
+      <div class="admin-panel"><h2>Student Accounts</h2><p class="muted">Search using the student's Student ID. Student records remain hidden until you search.</p>
+       <div class="admin-search-row"><div><label for="adminStudentSearch">Student ID</label><input id="adminStudentSearch" type="search" placeholder="Enter Student ID" autocomplete="off"></div><button class="primary" type="button" id="adminStudentSearchBtn">Search Students</button><button class="secondary" type="button" id="adminStudentClearBtn">Clear</button></div>
+       <div id="adminStudentsEmpty" class="admin-empty">Enter a Student ID and select Search Students to display matching accounts.</div>
+       <div id="adminStudentsResults" class="admin-table-wrap hidden"><table class="admin-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Created</th><th>Actions</th></tr></thead><tbody id="adminStudentsBody"></tbody></table></div>
+      </div>
+     </section>
+     <section class="admin-view" data-admin-panel="danger">
+      <div class="admin-panel admin-danger-panel"><h2>Danger Zone</h2><p>Permanently erase all teacher accounts, student accounts, and saved academic data. The administrator account will remain.</p><p><strong>This action cannot be undone.</strong> Make sure you have a recoverable copy of important data before proceeding.</p><button class="danger" id="adminEraseAll">PERMANENTLY DELETE ALL DATA</button></div>
+     </section>
+    </main>
+   </div>
   </section>
  </div>
 </div>
@@ -1892,7 +1920,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (function(){
  const API='https://classrecord-api.erwinalcamphorjr.workers.dev';
  const $=id=>document.getElementById(id);
- let token='', adminUsername='Admin2026';
+ let token='', adminUsername='Admin2026', allTeachers=[], allStudents=[];
  function msg(id,text,error=false){const el=$(id);if(!el)return;el.textContent=text;el.classList.remove('hidden');el.style.background=error?'#fee2e2':'#dcfce7';el.style.color=error?'#991b1b':'#166534';}
  function clearMsg(id){const el=$(id);if(el){el.textContent='';el.classList.add('hidden')}}
  async function request(path,data={},includeToken=true){
@@ -1908,33 +1936,58 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('adminRoot').classList.remove('hidden');$('adminLoginPanel').classList.remove('hidden');$('adminDashboard').classList.add('hidden');
   $('adminUsername').value='';$('adminLoginPassword').value='';clearMsg('adminLoginMsg');
  }
- function exitAdmin(){token='';$('adminRoot').classList.add('hidden');$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('loginAsSwitcher').classList.remove('hidden');if(typeof account==='function'){if(account())showLogin();else showRegister();}}
+ function exitAdmin(){token='';allTeachers=[];allStudents=[];$('adminRoot').classList.add('hidden');$('auth').classList.remove('hidden');$('app').classList.add('hidden');$('loginAsSwitcher').classList.remove('hidden');if(typeof account==='function'){if(account())showLogin();else showRegister();}}
  function temporaryPassword(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';const bytes=new Uint32Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>chars[b%chars.length]).join('');}
- async function protectedAction(path,payload,verb){
-  const adminPassword=prompt('Enter your CURRENT admin password to '+verb+':');
-  if(adminPassword===null)return null;
-  return request(path,{...payload,adminPassword});
- }
+ async function protectedAction(path,payload,verb){const adminPassword=prompt('Enter your CURRENT admin password to '+verb+':');if(adminPassword===null)return null;return request(path,{...payload,adminPassword});}
  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function showView(view){document.querySelectorAll('[data-admin-view]').forEach(b=>b.classList.toggle('active',b.dataset.adminView===view));document.querySelectorAll('[data-admin-panel]').forEach(p=>p.classList.toggle('active',p.dataset.adminPanel===view));}
+ function resetSearchViews(){
+  $('adminTeacherSearch').value='';$('adminStudentSearch').value='';
+  $('adminTeachersBody').innerHTML='';$('adminStudentsBody').innerHTML='';
+  $('adminTeachersResults').classList.add('hidden');$('adminStudentsResults').classList.add('hidden');
+  $('adminTeachersEmpty').classList.remove('hidden');$('adminStudentsEmpty').classList.remove('hidden');
+  $('adminTeachersEmpty').textContent="Enter a teacher's last name and select Search Teachers to display matching accounts.";
+  $('adminStudentsEmpty').textContent='Enter a Student ID and select Search Students to display matching accounts.';
+ }
  async function loadAccounts(){
   clearMsg('adminMsg');
   try{
-   const adminPassword=prompt('Enter your CURRENT admin password to view account lists:');
+   const adminPassword=prompt('Enter your CURRENT admin password to securely load account records:');
    if(adminPassword===null)return;
    const data=await request('/admin/accounts',{adminPassword});
-   $('adminTeachersBody').innerHTML=(data.teachers||[]).map(t=>`<tr><td>${esc(t.full_name)}</td><td>${esc(t.username)}</td><td>${esc(t.email)}</td><td>${esc(t.created_at)}</td><td><button class="admin-action" data-admin="reset-teacher" data-id="${esc(t.id)}">Generate Reset Password</button><button class="admin-action admin-secondary" data-admin="scratch" data-id="${esc(t.id)}">Reset to Scratch</button><button class="admin-action admin-danger" data-admin="delete-teacher" data-id="${esc(t.id)}">Delete Permanently</button></td></tr>`).join('')||'<tr><td colspan="5">No teacher accounts.</td></tr>';
-   $('adminStudentsBody').innerHTML=(data.students||[]).map(s=>`<tr><td>${esc(s.full_name)}</td><td>${esc(s.student_number)}</td><td>${esc(s.email)}</td><td>${esc(s.created_at)}</td><td><button class="admin-action" data-admin="reset-student" data-id="${esc(s.id)}">Generate Reset Password</button><button class="admin-action admin-danger" data-admin="delete-student" data-id="${esc(s.id)}">Delete Permanently</button></td></tr>`).join('')||'<tr><td colspan="5">No student accounts.</td></tr>';
-   msg('adminMsg','Account lists loaded.');
+   allTeachers=data.teachers||[];allStudents=data.students||[];resetSearchViews();
+   msg('adminMsg','Account records loaded securely. Search by teacher last name or student ID to display accounts.');
   }catch(e){msg('adminMsg',e.message,true)}
+ }
+ function searchTeachers(){
+  const q=$('adminTeacherSearch').value.trim().toLowerCase();
+  if(!q){$('adminTeachersBody').innerHTML='';$('adminTeachersResults').classList.add('hidden');$('adminTeachersEmpty').classList.remove('hidden');$('adminTeachersEmpty').textContent="Enter a teacher's last name and select Search Teachers to display matching accounts.";return;}
+  const found=allTeachers.filter(t=>{const name=String(t.full_name||'').trim().toLowerCase();const parts=name.split(/\s+/);const last=parts.length?parts[parts.length-1]:'';return last.includes(q);});
+  $('adminTeachersBody').innerHTML=found.map(t=>`<tr><td>${esc(t.full_name)}</td><td>${esc(t.username)}</td><td>${esc(t.email)}</td><td>${esc(t.created_at)}</td><td><button class="admin-action" data-admin="reset-teacher" data-id="${esc(t.id)}">Generate Reset Password</button><button class="admin-action admin-secondary" data-admin="scratch" data-id="${esc(t.id)}">Reset to Scratch</button><button class="admin-action admin-danger" data-admin="delete-teacher" data-id="${esc(t.id)}">Delete Permanently</button></td></tr>`).join('');
+  $('adminTeachersResults').classList.toggle('hidden',found.length===0);$('adminTeachersEmpty').classList.toggle('hidden',found.length>0);$('adminTeachersEmpty').textContent=found.length?'':`No teacher found with last name matching “${q}”.`;
+ }
+ function searchStudents(){
+  const q=$('adminStudentSearch').value.trim().toLowerCase();
+  if(!q){$('adminStudentsBody').innerHTML='';$('adminStudentsResults').classList.add('hidden');$('adminStudentsEmpty').classList.remove('hidden');$('adminStudentsEmpty').textContent='Enter a Student ID and select Search Students to display matching accounts.';return;}
+  const found=allStudents.filter(s=>String(s.student_number||'').trim().toLowerCase().includes(q));
+  $('adminStudentsBody').innerHTML=found.map(s=>`<tr><td>${esc(s.full_name)}</td><td>${esc(s.student_number)}</td><td>${esc(s.email)}</td><td>${esc(s.created_at)}</td><td><button class="admin-action" data-admin="reset-student" data-id="${esc(s.id)}">Generate Reset Password</button><button class="admin-action admin-danger" data-admin="delete-student" data-id="${esc(s.id)}">Delete Permanently</button></td></tr>`).join('');
+  $('adminStudentsResults').classList.toggle('hidden',found.length===0);$('adminStudentsEmpty').classList.toggle('hidden',found.length>0);$('adminStudentsEmpty').textContent=found.length?'':`No student found with Student ID matching “${q}”.`;
  }
  $('openAdminLogin').addEventListener('click',showAdminLogin);
  $('adminBackToLogin').addEventListener('click',exitAdmin);
  $('adminLoginForm').addEventListener('submit',async e=>{
   e.preventDefault();clearMsg('adminLoginMsg');
-  try{const r=await request('/auth/admin-login',{username:$('adminUsername').value.trim(),password:$('adminLoginPassword').value},false);token=r.token;adminUsername=r.user?.username||'Admin';$('adminLoginPanel').classList.add('hidden');$('adminDashboard').classList.remove('hidden');$('adminRoot').classList.remove('hidden');$('adminLoginPassword').value='';await loadAccounts();}
+  try{const r=await request('/auth/admin-login',{username:$('adminUsername').value.trim(),password:$('adminLoginPassword').value},false);token=r.token;adminUsername=r.user?.username||'Admin';$('adminLoginPanel').classList.add('hidden');$('adminDashboard').classList.remove('hidden');$('adminRoot').classList.remove('hidden');$('adminLoginPassword').value='';showView('teachers');await loadAccounts();}
   catch(err){msg('adminLoginMsg',err.message,true)}
  });
+ document.querySelectorAll('[data-admin-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.adminView)));
  $('adminRefresh').addEventListener('click',loadAccounts);
+ $('adminTeacherSearchBtn').addEventListener('click',searchTeachers);
+ $('adminStudentSearchBtn').addEventListener('click',searchStudents);
+ $('adminTeacherSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchTeachers()}});
+ $('adminStudentSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();searchStudents()}});
+ $('adminTeacherClearBtn').addEventListener('click',()=>{$('adminTeacherSearch').value='';searchTeachers();$('adminTeacherSearch').focus()});
+ $('adminStudentClearBtn').addEventListener('click',()=>{$('adminStudentSearch').value='';searchStudents();$('adminStudentSearch').focus()});
  $('adminLogout').addEventListener('click',()=>{if(confirm('Log out of the admin account?'))exitAdmin()});
  $('adminChangePassword').addEventListener('click',async()=>{
   const currentPassword=prompt('Enter your current admin password:');if(currentPassword===null)return;
@@ -1948,29 +2001,25 @@ document.addEventListener('DOMContentLoaded',()=>{
   const action=b.dataset.admin,id=b.dataset.id;
   try{
    if(action==='reset-teacher'||action==='reset-student'){
-    const password=temporaryPassword();
-    if(!confirm('Generate a temporary password for this account?'))return;
+    const password=temporaryPassword();if(!confirm('Generate a temporary password for this account?'))return;
     const path=action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';
-    const resetResult=await protectedAction(path,{accountId:id,temporaryPassword:password},'reset this password');
-    if(!resetResult)return;
-    alert('Temporary password (copy it now):\n\n'+password+'\n\nShare it securely with the account owner.');
-    msg('adminMsg','Password reset completed. The generated temporary password was shown once.');
+    const resetResult=await protectedAction(path,{accountId:id,temporaryPassword:password},'reset this password');if(!resetResult)return;
+    alert('Temporary password (copy it now):\n\n'+password+'\n\nShare it securely with the account owner.');msg('adminMsg','Password reset completed. The generated temporary password was shown once.');
    }else if(action==='scratch'){
     if(!confirm('Clear all saved online class-record data for this teacher? The teacher login account will remain.'))return;
-    const r=await protectedAction('/admin/reset-teacher-scratch',{accountId:id},'reset this teacher to scratch');
-    if(r)msg('adminMsg',r.message);
+    const r=await protectedAction('/admin/reset-teacher-scratch',{accountId:id},'reset this teacher to scratch');if(r)msg('adminMsg',r.message);
    }else if(action==='delete-teacher'||action==='delete-student'){
     if(!confirm('Permanently delete this account? This cannot be undone.'))return;
     const path=action==='delete-teacher'?'/admin/delete-teacher':'/admin/delete-student';
     const r=await protectedAction(path,{accountId:id},'permanently delete this account');
-    if(r){msg('adminMsg',r.message);await loadAccounts();}
+    if(r){msg('adminMsg',r.message);await loadAccounts();if(action==='delete-teacher')searchTeachers();else searchStudents();}
    }
   }catch(err){msg('adminMsg',err.message,true)}
  });
  $('adminEraseAll').addEventListener('click',async()=>{
   if(!confirm('WARNING: This permanently deletes ALL teacher accounts, ALL student accounts, and ALL academic data. The admin account remains. Continue?'))return;
   const confirmation=prompt('Type exactly DELETE ALL DATA to continue:');if(confirmation===null)return;
-  try{const r=await protectedAction('/admin/erase-all-data',{confirmation},'erase all data');if(r){msg('adminMsg',r.message);$('adminTeachersBody').innerHTML='<tr><td colspan="5">No teacher accounts.</td></tr>';$('adminStudentsBody').innerHTML='<tr><td colspan="5">No student accounts.</td></tr>';}}
+  try{const r=await protectedAction('/admin/erase-all-data',{confirmation},'erase all data');if(r){allTeachers=[];allStudents=[];resetSearchViews();msg('adminMsg',r.message);}}
   catch(err){msg('adminMsg',err.message,true)}
  });
 })();
