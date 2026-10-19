@@ -1429,7 +1429,7 @@ localStorage.removeItem(SESSION_KEY);if(sessionStorage.getItem(SESSION_KEY)==='t
     // Modal-specific confirmation controls must be handled by their own handlers.
     // Otherwise the global confirmation layer can trap the Clear All Data dialog
     // inside another confirmation dialog.
-    if(ownerModal && (ownerModal.id==='actionConfirmModal' || ownerModal.id==='clearAllDataModal'))return;
+    if(ownerModal && (ownerModal.id==='actionConfirmModal' || ownerModal.id==='clearAllDataModal' || ownerModal.id==='adminResetPasswordModal'))return;
     const text=(el.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();
     if(!text || skipTexts.has(text))return;
     const isAction=/^(\+\s*)?(add|save|update|remove|delete|mark dropped|unlock|lock|rename|clear all data|submit|assign|enroll)/i.test(text) || /\b(save|update|remove|delete|mark dropped|unlock|lock|rename|add student|add activity|add component|add semester|add school year)\b/i.test(text);
