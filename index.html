@@ -374,7 +374,7 @@ table.student-table .nowrap-label { white-space: normal !important; display: inl
 <style>
 #adminRoot{min-height:100vh;background:#f3f6f9;padding:0;color:#1e293b}
 .admin-wrap{max-width:none;margin:0;min-height:100vh}.admin-shell{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.admin-sidebar{background:#172554;color:#fff;padding:24px 14px;display:flex;flex-direction:column;gap:8px}.admin-brand{font-size:19px;font-weight:800;padding:0 10px 22px}.admin-brand small{display:block;font-size:11px;color:#bfdbfe;font-weight:400;margin-top:5px}.admin-nav-label{font-size:10px;letter-spacing:.1em;color:#93c5fd;font-weight:800;padding:10px 10px 4px}.admin-nav-btn{width:100%;border:1px solid transparent;background:transparent;color:#dbeafe;text-align:left;border-radius:9px;padding:12px 13px;font-size:14px;font-weight:700;cursor:pointer}.admin-nav-btn:hover{background:#1e3a8a}.admin-nav-btn.active{background:#1d4ed8;border-color:#60a5fa;color:#fff}.admin-sidebar-footer{margin-top:auto;padding-top:14px;border-top:1px solid #334155}.admin-main{padding:26px;min-width:0}.admin-view{display:none}.admin-view.active{display:block}.admin-panel{background:#fff;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 3px 12px #0000000d}.admin-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.admin-table-wrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}.admin-table th{background:#f8fafc}.admin-action{border:0;border-radius:7px;padding:7px 9px;margin:2px;background:#2563eb;color:white;font-weight:600}.admin-danger{background:#dc2626}.admin-secondary{background:#475569}.admin-msg{padding:10px;border-radius:8px;margin:10px 0;white-space:pre-wrap}.admin-note{background:#fff7ed;color:#9a3412;padding:12px;border-radius:8px}.admin-search-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:14px 0}.admin-search-row>div{flex:1;min-width:220px}.admin-search-row label{margin-top:0}.admin-search-hint{font-size:12px;color:#64748b;margin-top:7px}.admin-empty{padding:18px;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;margin-top:14px}.admin-danger-panel{border:1px solid #fecaca}.admin-danger-panel h2{color:#991b1b}
-#adminLoginPanel form>label{display:block;margin-top:14px}#adminLoginPanel form>.password-wrap{margin-bottom:22px}#adminLoginPanel form>button[type="submit"]{display:block;margin-top:14px!important;min-height:42px;padding:10px 18px}#adminLoginPanel form>label+input{margin-bottom:2px}
+#adminLoginPanel form>label{display:block;margin-top:14px}#adminLoginPanel form>.password-wrap{margin-bottom:22px}#adminLoginPanel form>button[type="submit"]{display:block;width:100%;margin:18px auto 0!important;min-height:42px;padding:10px 18px;text-align:center}#adminLoginPanel form>label+input{margin-bottom:2px}
 #adminLoginPanel .password-wrap{position:relative;display:flex;align-items:center}#adminLoginPanel .password-wrap input{width:100%;padding-right:48px}#adminLoginPanel .password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;padding:8px;color:#475569}
 .admin-live-preview{font-size:12px;color:#475569;margin-top:6px;min-height:16px;line-height:1.5}.admin-password-generation-row{display:flex;gap:8px;align-items:stretch}.admin-password-generation-row .password-wrap{position:relative;display:flex;align-items:center;flex:1;min-width:0}.admin-password-generation-row input{width:100%;padding-right:44px}.admin-password-generation-row .password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;padding:8px;color:#475569}.admin-password-generation-row>button{min-width:96px}@media(max-width:480px){.admin-password-generation-row{flex-wrap:wrap}.admin-password-generation-row>button{width:100%}}
 @media(max-width:800px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;padding:14px;gap:5px}.admin-brand{padding-bottom:8px}.admin-sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.admin-nav-label{grid-column:1/-1}.admin-sidebar-footer{margin-top:8px}.admin-main{padding:14px}.admin-panel{padding:14px}.admin-table{min-width:760px}}
@@ -2037,6 +2037,43 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{const r=await protectedAction('/admin/erase-all-data',{confirmation},'erase all data');if(r){allTeachers=[];allStudents=[];resetSearchViews();msg('adminMsg',r.message);}}
   catch(err){msg('adminMsg',err.message,true)}
  });
+})();
+</script>
+
+<script id="reliablePasswordRevealFix">
+(function(){
+  const timers = new WeakMap();
+  document.addEventListener('click', function(event){
+    const button = event.target.closest && event.target.closest('[data-password-target]');
+    if (!button) return;
+    const input = document.getElementById(button.getAttribute('data-password-target'));
+    if (!input) return;
+    // Handle the toggle here in capture phase and prevent duplicate legacy handlers.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const previous = timers.get(input);
+    if (previous) { clearTimeout(previous); timers.delete(input); }
+    const isHidden = input.type === 'password';
+    if (isHidden) {
+      input.type = 'text';
+      button.setAttribute('aria-label', 'Hide password');
+      button.title = 'Hide password';
+      button.innerHTML = '<span>🙈</span>';
+      const timer = setTimeout(function(){
+        input.type = 'password';
+        button.setAttribute('aria-label', 'Show password');
+        button.title = 'Show password';
+        button.innerHTML = '<span>👁</span>';
+        timers.delete(input);
+      }, 1000);
+      timers.set(input, timer);
+    } else {
+      input.type = 'password';
+      button.setAttribute('aria-label', 'Show password');
+      button.title = 'Show password';
+      button.innerHTML = '<span>👁</span>';
+    }
+  }, true);
 })();
 </script>
 </body></html>
