@@ -1429,7 +1429,12 @@ localStorage.removeItem(SESSION_KEY);if(sessionStorage.getItem(SESSION_KEY)==='t
     // Modal-specific confirmation controls must be handled by their own handlers.
     // Otherwise the global confirmation layer can trap the Clear All Data dialog
     // inside another confirmation dialog.
-    if(ownerModal && (ownerModal.id==='actionConfirmModal' || ownerModal.id==='clearAllDataModal'))return;
+    if(ownerModal && (
+      ownerModal.id==='actionConfirmModal' ||
+      ownerModal.id==='clearAllDataModal' ||
+      ownerModal.id==='adminResetPasswordModal' ||
+      ownerModal.id==='resetStudentPasswordModal'
+    ))return;
     const text=(el.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();
     if(!text || skipTexts.has(text))return;
     const isAction=/^(\+\s*)?(add|save|update|remove|delete|mark dropped|unlock|lock|rename|clear all data|submit|assign|enroll)/i.test(text) || /\b(save|update|remove|delete|mark dropped|unlock|lock|rename|add student|add activity|add component|add semester|add school year)\b/i.test(text);
@@ -2036,42 +2041,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  function closeAdminReset(){ $('adminResetPasswordModal').classList.add('hidden');$('adminTemporaryPassword').value='';$('adminTemporaryPassword').type='password';const eye=$('adminTemporaryPassword').parentElement.querySelector('.password-toggle');if(eye){if(eye._hideTimer){clearTimeout(eye._hideTimer);eye._hideTimer=null;}eye.setAttribute('aria-label','Reveal temporary password');eye.title='Reveal temporary password';eye.innerHTML='<span class="eye-closed">👁</span>';}resetTarget=null; }
  $('adminResetPasswordClose').addEventListener('click',closeAdminReset);$('adminResetPasswordCancel').addEventListener('click',closeAdminReset);
  $('adminGeneratePassword').addEventListener('click',()=>{$('adminTemporaryPassword').value=temporaryPassword();$('adminResetPasswordMsg').textContent='Temporary password generated. Click “Save Temporary Password” to apply it.';$('adminResetPasswordMsg').classList.remove('hidden');});
- $('adminSaveTemporaryPassword').addEventListener('click',async()=>{
-  if(!resetTarget)return;
-  const temporaryPasswordValue=$('adminTemporaryPassword').value;
-  if(!temporaryPasswordValue){
-   $('adminResetPasswordMsg').textContent='Click Generate first to create a temporary password.';
-   $('adminResetPasswordMsg').classList.remove('hidden');
-   return;
-  }
-  const target={...resetTarget};
-  const saveButton=$('adminSaveTemporaryPassword');
-  const path=target.action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';
-  saveButton.disabled=true;
-  const oldButtonText=saveButton.textContent;
-  saveButton.textContent='Saving…';
-  try{
-   const r=await protectedAction(path,{accountId:target.id,temporaryPassword:temporaryPasswordValue},'reset this password');
-   if(!r)return;
-   // Match the Teacher dashboard pattern: save directly from the password dialog,
-   // with no second confirmation modal layered over it.
-   let copied=false;
-   try{
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-     await navigator.clipboard.writeText(temporaryPasswordValue);
-     copied=true;
-    }
-   }catch(_){}
-   msg('adminMsg','Password reset completed. Temporary password: '+temporaryPasswordValue+(copied?' — copied to clipboard.':' — copy it now and share it securely.'));
-   closeAdminReset();
-  }catch(err){
-   $('adminResetPasswordMsg').textContent=err.message||'Unable to reset this password.';
-   $('adminResetPasswordMsg').classList.remove('hidden');
-  }finally{
-   saveButton.disabled=false;
-   saveButton.textContent=oldButtonText;
-  }
- });
+ $('adminSaveTemporaryPassword').addEventListener('click',async()=>{if(!resetTarget)return;const temporaryPasswordValue=$('adminTemporaryPassword').value;if(!temporaryPasswordValue){$('adminResetPasswordMsg').textContent='Click Generate first to create a temporary password.';$('adminResetPasswordMsg').classList.remove('hidden');return;}const target=resetTarget;const path=target.action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';try{const r=await protectedAction(path,{accountId:target.id,temporaryPassword:temporaryPasswordValue},'reset this password');if(!r)return;msg('adminMsg','Password reset completed. Temporary password: '+temporaryPasswordValue+' — copy it now and share it securely.');closeAdminReset();}catch(err){$('adminResetPasswordMsg').textContent=err.message;$('adminResetPasswordMsg').classList.remove('hidden');}});
  document.querySelectorAll('[data-password-target]').forEach(btn=>btn.addEventListener('click',()=>{const input=$(btn.dataset.passwordTarget);if(!input)return;const showing=input.type==='password';input.type=showing?'text':'password';btn.setAttribute('aria-label',showing?'Hide password':'Show password');btn.title=showing?'Hide password':'Show password';}));
  $('adminEraseAll').addEventListener('click',async()=>{
   if(!confirm('WARNING: This permanently deletes ALL teacher accounts, ALL student accounts, and ALL academic data. The admin account remains. Continue?'))return;
