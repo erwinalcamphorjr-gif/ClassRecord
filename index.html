@@ -1933,6 +1933,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   <label for="adminTemporaryPassword" style="display:block;margin-top:16px">Temporary Password</label><div class="admin-password-generation-row"><div class="password-wrap"><input id="adminTemporaryPassword" type="password" readonly autocomplete="off" placeholder="Click Generate Password"><button aria-label="Reveal temporary password" class="password-toggle" data-password-target="adminTemporaryPassword" title="Reveal temporary password" type="button"><span>👁</span></button></div><button class="secondary" id="adminGeneratePassword" type="button">Generate</button></div>
   <div id="adminResetPasswordMsg" class="admin-msg hidden" aria-live="polite"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap"><button class="secondary" id="adminResetPasswordCancel" type="button">Cancel</button><button class="primary" id="adminSaveTemporaryPassword" type="button">Save Temporary Password</button></div>
  </div>
+ <div id="adminSavePasswordConfirm" class="hidden" role="dialog" aria-modal="true" aria-labelledby="adminSavePasswordConfirmTitle" style="position:absolute;inset:0;z-index:10060;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:18px;border-radius:14px">
+  <div style="width:min(420px,100%);background:#fff;border-radius:12px;padding:22px;box-shadow:0 18px 50px #0005">
+   <h3 id="adminSavePasswordConfirmTitle" style="margin:0 0 9px;color:#0f172a">Confirm Temporary Password</h3>
+   <p id="adminSavePasswordConfirmText" style="margin:0;color:#475569;line-height:1.5">Do you want to save this temporary password to the selected account?</p>
+   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px"><button id="adminSavePasswordNo" type="button" class="secondary">Cancel</button><button id="adminSavePasswordYes" type="button" class="primary">Continue</button></div>
+  </div>
+ </div>
 </div>
 <script>
 (function(){
@@ -2036,7 +2043,31 @@ document.addEventListener('DOMContentLoaded',()=>{
  function closeAdminReset(){ $('adminResetPasswordModal').classList.add('hidden');$('adminTemporaryPassword').value='';$('adminTemporaryPassword').type='password';const eye=$('adminTemporaryPassword').parentElement.querySelector('.password-toggle');if(eye){if(eye._hideTimer){clearTimeout(eye._hideTimer);eye._hideTimer=null;}eye.setAttribute('aria-label','Reveal temporary password');eye.title='Reveal temporary password';eye.innerHTML='<span class="eye-closed">👁</span>';}resetTarget=null; }
  $('adminResetPasswordClose').addEventListener('click',closeAdminReset);$('adminResetPasswordCancel').addEventListener('click',closeAdminReset);
  $('adminGeneratePassword').addEventListener('click',()=>{$('adminTemporaryPassword').value=temporaryPassword();$('adminResetPasswordMsg').textContent='Temporary password generated. Click “Save Temporary Password” to apply it.';$('adminResetPasswordMsg').classList.remove('hidden');});
- $('adminSaveTemporaryPassword').addEventListener('click',async()=>{if(!resetTarget)return;const temporaryPasswordValue=$('adminTemporaryPassword').value;if(!temporaryPasswordValue){$('adminResetPasswordMsg').textContent='Click Generate first to create a temporary password.';$('adminResetPasswordMsg').classList.remove('hidden');return;}const target=resetTarget;const path=target.action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';try{const r=await protectedAction(path,{accountId:target.id,temporaryPassword:temporaryPasswordValue},'reset this password');if(!r)return;msg('adminMsg','Password reset completed. Temporary password: '+temporaryPasswordValue+' — copy it now and share it securely.');closeAdminReset();}catch(err){$('adminResetPasswordMsg').textContent=err.message;$('adminResetPasswordMsg').classList.remove('hidden');}});
+ function closeAdminSavePasswordConfirm(){ $('adminSavePasswordConfirm').classList.add('hidden'); }
+ $('adminSavePasswordNo').addEventListener('click',closeAdminSavePasswordConfirm);
+ $('adminSavePasswordConfirm').addEventListener('click',e=>{if(e.target===$('adminSavePasswordConfirm'))closeAdminSavePasswordConfirm();});
+ $('adminSaveTemporaryPassword').addEventListener('click',()=>{
+  if(!resetTarget)return;
+  const temporaryPasswordValue=$('adminTemporaryPassword').value;
+  if(!temporaryPasswordValue){$('adminResetPasswordMsg').textContent='Click Generate first to create a temporary password.';$('adminResetPasswordMsg').classList.remove('hidden');return;}
+  $('adminSavePasswordConfirmText').textContent='Continue saving the generated temporary password for this account? Choose Cancel to return without saving.';
+  $('adminSavePasswordConfirm').classList.remove('hidden');
+ });
+ $('adminSavePasswordYes').addEventListener('click',async()=>{
+  if(!resetTarget)return;
+  closeAdminSavePasswordConfirm();
+  const temporaryPasswordValue=$('adminTemporaryPassword').value;
+  if(!temporaryPasswordValue)return;
+  const target={...resetTarget};const path=target.action==='reset-teacher'?'/admin/reset-teacher-password':'/admin/reset-student-password';
+  const yes=$('adminSavePasswordYes');yes.disabled=true;yes.textContent='Saving…';
+  try{
+   const r=await protectedAction(path,{accountId:target.id,temporaryPassword:temporaryPasswordValue},'reset this password');
+   if(!r)return;
+   msg('adminMsg','Password reset completed. Temporary password: '+temporaryPasswordValue+' — copy it now and share it securely.');
+   closeAdminReset();
+  }catch(err){$('adminResetPasswordMsg').textContent=err.message;$('adminResetPasswordMsg').classList.remove('hidden');}
+  finally{yes.disabled=false;yes.textContent='Continue';}
+ });
  document.querySelectorAll('[data-password-target]').forEach(btn=>btn.addEventListener('click',()=>{const input=$(btn.dataset.passwordTarget);if(!input)return;const showing=input.type==='password';input.type=showing?'text':'password';btn.setAttribute('aria-label',showing?'Hide password':'Show password');btn.title=showing?'Hide password':'Show password';}));
  $('adminEraseAll').addEventListener('click',async()=>{
   if(!confirm('WARNING: This permanently deletes ALL teacher accounts, ALL student accounts, and ALL academic data. The admin account remains. Continue?'))return;
